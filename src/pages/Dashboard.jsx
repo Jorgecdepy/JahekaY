@@ -6,6 +6,7 @@ import Facturas from './Facturas'
 import Tarifas from './Tarifas'
 import CajaDiaria from './CajaDiaria'
 import Configuracion from './Configuracion'
+import Reportes from './Reportes'
 import './Dashboard.css'
 
 function Dashboard() {
@@ -216,6 +217,21 @@ function Dashboard() {
                     <p>Gestionar ingresos y gastos</p>
                   </div>
                 </button>
+
+                <button className="action-card" onClick={() => setActiveSection('reportes')}>
+                  <div className="action-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                      <path d="M12 18v-6"></path>
+                      <path d="M9 15h6"></path>
+                    </svg>
+                  </div>
+                  <div className="action-text">
+                    <strong>Reportes</strong>
+                    <p>Generar informes y exportar</p>
+                  </div>
+                </button>
               </div>
             </div>
           </div>
@@ -228,6 +244,8 @@ function Dashboard() {
         return <Facturas />
       case 'caja':
         return <CajaDiaria />
+      case 'reportes':
+        return <Reportes />
       case 'configuracion':
         return <Configuracion />
       default:
@@ -315,6 +333,20 @@ function Dashboard() {
               </svg>
             </span>
             Caja Diaria
+          </button>
+          <button
+            className={activeSection === 'reportes' ? 'nav-item active' : 'nav-item'}
+            onClick={() => setActiveSection('reportes')}
+          >
+            <span className="nav-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <path d="M12 18v-6"></path>
+                <path d="M9 15h6"></path>
+              </svg>
+            </span>
+            Reportes
           </button>
           <button
             className={activeSection === 'configuracion' ? 'nav-item active' : 'nav-item'}
