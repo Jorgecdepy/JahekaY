@@ -191,16 +191,16 @@ function Dashboard() {
                   </div>
                 </button>
 
-                <button className="action-card" onClick={() => setActiveSection('tarifas')}>
+                <button className="action-card" onClick={() => setActiveSection('configuracion')}>
                   <div className="action-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <polyline points="12 6 12 12 16 14"></polyline>
+                      <circle cx="12" cy="12" r="3"></circle>
+                      <path d="M12 1v6m0 6v6m5.66-13.66l-4.24 4.24m-2.83 2.83l-4.24 4.24m16.97-2.83l-4.24-4.24m-2.83-2.83l-4.24-4.24"></path>
                     </svg>
                   </div>
                   <div className="action-text">
-                    <strong>Configurar Tarifas</strong>
-                    <p>Gestionar precios y rangos</p>
+                    <strong>Configuración</strong>
+                    <p>Tarifas y facturación automática</p>
                   </div>
                 </button>
 
@@ -226,8 +226,6 @@ function Dashboard() {
         return <Lecturas />
       case 'facturas':
         return <Facturas />
-      case 'tarifas':
-        return <Tarifas />
       case 'caja':
         return <CajaDiaria />
       case 'configuracion':
@@ -317,18 +315,6 @@ function Dashboard() {
               </svg>
             </span>
             Caja Diaria
-          </button>
-          <button
-            className={activeSection === 'tarifas' ? 'nav-item active' : 'nav-item'}
-            onClick={() => setActiveSection('tarifas')}
-          >
-            <span className="nav-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="1" x2="12" y2="23"></line>
-                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-              </svg>
-            </span>
-            Tarifas
           </button>
           <button
             className={activeSection === 'configuracion' ? 'nav-item active' : 'nav-item'}
