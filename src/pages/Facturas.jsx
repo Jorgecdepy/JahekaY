@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../services/supabase'
 import Modal from '../components/Modal'
-import './Facturas.css'
 import FormularioFactura from '../components/FormularioFactura'
+import './Facturas.css'
 
 function Facturas() {
   const [facturas, setFacturas] = useState([])
-  const [lecturas, setLecturas] = useState([])
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
@@ -18,8 +17,7 @@ function Facturas() {
 
   const cargarDatos = async () => {
     setLoading(true)
-    
-    // Cargar facturas con información del cliente
+
     const { data: facturasData, error: facturasError } = await supabase
       .from('facturas')
       .select(`
@@ -38,30 +36,10 @@ function Facturas() {
       `)
       .order('fecha_emision', { ascending: false })
 
-    // Cargar lecturas sin factura
-    const { data: lecturasData, error: lecturasError } = await supabase
-      .from('lecturas')
-      .select(`
-        *,
-        usuarios (
-          nombre_completo,
-          numero_medidor,
-          cedula
-        )
-      `)
-      .is('id', null)
-      .order('fecha_lectura', { ascending: false })
-
     if (facturasError) {
       console.error('Error:', facturasError)
     } else {
       setFacturas(facturasData || [])
-    }
-
-    if (lecturasError) {
-      console.error('Error:', lecturasError)
-    } else {
-      setLecturas(lecturasData || [])
     }
 
     setLoading(false)
@@ -75,7 +53,7 @@ function Facturas() {
   const marcarComoPagada = async (facturaId) => {
     const { error } = await supabase
       .from('facturas')
-      .update({ 
+      .update({
         estado: 'pagada',
         fecha_pago: new Date().toISOString().split('T')[0]
       })
@@ -90,10 +68,10 @@ function Facturas() {
   }
 
   const facturasFiltradas = facturas.filter(factura => {
-    const coincideBusqueda = factura.usuarios?.nombre_completo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      factura.usuarios?.numero_medidor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      factura.usuarios?.cedula.includes(searchTerm)
-    
+    const coincideBusqueda = factura.usuarios?.nombre_completo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      factura.usuarios?.numero_medidor?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      factura.usuarios?.cedula?.includes(searchTerm)
+
     const coincideEstado = filtroEstado === 'todos' || factura.estado === filtroEstado
 
     return coincideBusqueda && coincideEstado
@@ -102,7 +80,7 @@ function Facturas() {
   const formatFecha = (fecha) => {
     return new Date(fecha).toLocaleDateString('es-PY', {
       year: 'numeric',
-      month: 'long',
+      month: 'short',
       day: 'numeric'
     })
   }
@@ -115,49 +93,66 @@ function Facturas() {
     }).format(monto)
   }
 
-  const getEstadoColor = (estado) => {
-    switch(estado) {
-      case 'pagada': return '#27ae60'
-      case 'vencida': return '#e74c3c'
-      case 'pendiente': return '#f39c12'
-      default: return '#95a5a6'
+  const getEstadoClase = (estado) => {
+    switch (estado) {
+      case 'pagada': return 'badge-success'
+      case 'vencida': return 'badge-danger'
+      case 'pendiente': return 'badge-warning'
+      default: return 'badge-secondary'
     }
   }
 
   const totalPendiente = facturas
     .filter(f => f.estado === 'pendiente')
-    .reduce((sum, f) => sum + parseFloat(f.total), 0)
+    .reduce((sum, f) => sum + parseFloat(f.total || 0), 0)
 
   const totalPagado = facturas
     .filter(f => f.estado === 'pagada')
-    .reduce((sum, f) => sum + parseFloat(f.total), 0)
+    .reduce((sum, f) => sum + parseFloat(f.total || 0), 0)
 
   if (loading) {
-    return <div className="loading-container">Cargando facturas...</div>
+    return (
+      <div className="page-loading">
+        <div className="spinner spinner-lg"></div>
+        <p>Cargando facturas...</p>
+      </div>
+    )
   }
 
   return (
-    <div className="facturas-container">
-      <div className="facturas-header">
-        <h2>Gestión de Facturas</h2>
+    <div className="page-container animate-fade-in">
+      <div className="page-header">
+        <div>
+          <h2>Gestion de Facturas</h2>
+          <p className="page-subtitle">Administra las facturas de consumo</p>
+        </div>
         <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
-          + Generar Factura
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Generar Factura
         </button>
       </div>
 
-      <div className="filtros-bar">
-        <input
-          type="text"
-          placeholder="Buscar por nombre, cédula o medidor..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="search-input"
-        />
-        
-        <select 
-          value={filtroEstado} 
+      <div className="filters-section">
+        <div className="search-box">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input
+            type="text"
+            placeholder="Buscar por nombre, cedula o medidor..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+
+        <select
+          value={filtroEstado}
           onChange={(e) => setFiltroEstado(e.target.value)}
-          className="filtro-select"
+          className="filter-select"
         >
           <option value="todos">Todos los estados</option>
           <option value="pendiente">Pendientes</option>
@@ -166,26 +161,26 @@ function Facturas() {
         </select>
       </div>
 
-      <div className="facturas-stats">
-        <div className="stat-card">
-          <p className="stat-label">Total Facturas</p>
-          <p className="stat-value">{facturas.length}</p>
+      <div className="mini-stats">
+        <div className="mini-stat">
+          <span className="mini-stat-value">{facturas.length}</span>
+          <span className="mini-stat-label">Total</span>
         </div>
-        <div className="stat-card">
-          <p className="stat-label">Pendientes</p>
-          <p className="stat-value">{facturas.filter(f => f.estado === 'pendiente').length}</p>
+        <div className="mini-stat">
+          <span className="mini-stat-value text-warning">{facturas.filter(f => f.estado === 'pendiente').length}</span>
+          <span className="mini-stat-label">Pendientes</span>
         </div>
-        <div className="stat-card">
-          <p className="stat-label">Por Cobrar</p>
-          <p className="stat-value stat-money">{formatMonto(totalPendiente)}</p>
+        <div className="mini-stat">
+          <span className="mini-stat-value text-warning mini-stat-money">{formatMonto(totalPendiente)}</span>
+          <span className="mini-stat-label">Por Cobrar</span>
         </div>
-        <div className="stat-card">
-          <p className="stat-label">Cobrado</p>
-          <p className="stat-value stat-money">{formatMonto(totalPagado)}</p>
+        <div className="mini-stat">
+          <span className="mini-stat-value text-success mini-stat-money">{formatMonto(totalPagado)}</span>
+          <span className="mini-stat-label">Cobrado</span>
         </div>
       </div>
 
-      <div className="facturas-table">
+      <div className="table-container">
         <table>
           <thead>
             <tr>
@@ -194,7 +189,7 @@ function Facturas() {
               <th>Periodo</th>
               <th>Consumo</th>
               <th>Total</th>
-              <th>Emisión</th>
+              <th>Emision</th>
               <th>Vencimiento</th>
               <th>Estado</th>
               <th>Acciones</th>
@@ -203,52 +198,66 @@ function Facturas() {
           <tbody>
             {facturasFiltradas.map((factura) => (
               <tr key={factura.id}>
-                <td>{factura.usuarios?.nombre_completo}</td>
-                <td><span className="medidor-badge">{factura.usuarios?.numero_medidor}</span></td>
+                <td className="td-name">{factura.usuarios?.nombre_completo}</td>
+                <td><span className="badge badge-info">{factura.usuarios?.numero_medidor}</span></td>
                 <td>{factura.periodo}</td>
-                <td><span className="consumo-badge">{factura.consumo_m3} m³</span></td>
-                <td className="monto-cell">{formatMonto(factura.total)}</td>
+                <td><span className="badge badge-success">{factura.consumo_m3} m3</span></td>
+                <td className="td-money">{formatMonto(factura.total)}</td>
                 <td>{formatFecha(factura.fecha_emision)}</td>
                 <td>{formatFecha(factura.fecha_vencimiento)}</td>
                 <td>
-                  <span 
-                    className="estado-badge" 
-                    style={{ backgroundColor: getEstadoColor(factura.estado) }}
-                  >
-                    {factura.estado.toUpperCase()}
+                  <span className={`badge ${getEstadoClase(factura.estado)}`}>
+                    {factura.estado?.toUpperCase()}
                   </span>
                 </td>
                 <td>
-                  <button className="btn-action">Ver</button>
-                  {factura.estado === 'pendiente' && (
-                    <button 
-                      className="btn-action btn-success"
-                      onClick={() => marcarComoPagada(factura.id)}
-                    >
-                      Pagar
+                  <div className="action-buttons">
+                    <button className="btn-icon" title="Ver detalles">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
                     </button>
-                  )}
+                    {factura.estado === 'pendiente' && (
+                      <button
+                        className="btn-icon btn-icon-success"
+                        title="Marcar como pagada"
+                        onClick={() => marcarComoPagada(factura.id)}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
+
+        {facturasFiltradas.length === 0 && (
+          <div className="empty-state">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+            <p>No se encontraron facturas</p>
+            <span>Intenta con otros terminos de busqueda</span>
+          </div>
+        )}
       </div>
 
-      {facturasFiltradas.length === 0 && (
-        <div className="no-results">
-          No se encontraron facturas con ese criterio de búsqueda.
-        </div>
-      )}
-
-      <Modal 
-        isOpen={isModalOpen} 
+      <Modal
+        isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title="Generar Factura"
       >
-        <FormularioFactura 
-         onSuccess={handleSuccess}
-         onCancel={() => setIsModalOpen(false)}
+        <FormularioFactura
+          onSuccess={handleSuccess}
+          onCancel={() => setIsModalOpen(false)}
         />
       </Modal>
     </div>

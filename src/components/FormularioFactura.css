@@ -1,124 +1,178 @@
-.formulario-factura {
+/* Form Loading State */
+.form-loading {
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  gap: 1rem;
 }
 
-.loading-form {
+.form-loading p {
+  color: var(--gray-500);
+  font-size: 0.9rem;
+}
+
+/* Form Empty State */
+.form-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
   text-align: center;
-  padding: 40px;
-  color: #667eea;
-  font-size: 18px;
+  gap: 0.75rem;
 }
 
-.no-lecturas {
-  text-align: center;
-  padding: 40px;
+.form-empty svg {
+  width: 48px;
+  height: 48px;
+  color: var(--gray-300);
+  margin-bottom: 0.5rem;
 }
 
-.no-lecturas p {
-  margin: 10px 0;
-  color: #666;
-  font-size: 16px;
+.form-empty p {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  margin: 0;
 }
 
-.info-lectura {
-  background: #f8f9fa;
-  padding: 20px;
-  border-radius: 8px;
-  border-left: 4px solid #667eea;
+.form-empty span {
+  font-size: 0.875rem;
+  color: var(--gray-500);
 }
 
-.info-lectura h4 {
-  margin: 0 0 15px 0;
-  color: #333;
-  font-size: 16px;
+.form-empty .btn-secondary {
+  margin-top: 1rem;
 }
 
-.info-grid {
+/* Factura Info Box */
+.factura-info-box {
+  background: var(--gray-50);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  border: 1px solid var(--gray-200);
+}
+
+.factura-info-box h4 {
+  margin: 0 0 1rem 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.factura-info-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 15px;
+  gap: 1rem;
 }
 
-.info-item {
+.factura-info-item {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 0.25rem;
 }
 
-.info-label {
-  font-size: 12px;
-  color: #666;
-  font-weight: 600;
+.factura-info-label {
+  font-size: 0.75rem;
+  color: var(--gray-500);
   text-transform: uppercase;
-}
-
-.info-value {
-  font-size: 16px;
-  color: #333;
+  letter-spacing: 0.025em;
   font-weight: 500;
 }
 
-.consumo-highlight {
-  color: #667eea;
+.factura-info-value {
+  font-size: 0.9375rem;
+  color: var(--gray-900);
+  font-weight: 500;
+}
+
+.factura-consumo-highlight {
+  color: var(--primary-color);
   font-weight: 700;
-  font-size: 18px;
+  font-size: 1.125rem;
 }
 
-.calculo-desglose {
+/* Desglose de Factura */
+.factura-desglose {
   background: white;
-  border: 2px solid #e9ecef;
-  padding: 20px;
-  border-radius: 8px;
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
 }
 
-.calculo-desglose h4 {
-  margin: 0 0 15px 0;
-  color: #333;
-  font-size: 16px;
+.factura-desglose h4 {
+  margin: 0 0 1rem 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
 }
 
 .desglose-item {
   display: flex;
   justify-content: space-between;
-  padding: 12px 0;
-  border-bottom: 1px solid #e9ecef;
-  font-size: 15px;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--gray-100);
+  font-size: 0.9375rem;
+}
+
+.desglose-item:last-of-type {
+  border-bottom: none;
 }
 
 .desglose-item span:first-child {
-  color: #666;
+  color: var(--gray-600);
 }
 
 .desglose-item span:last-child {
   font-weight: 600;
-  color: #333;
+  color: var(--gray-900);
+  font-variant-numeric: tabular-nums;
 }
 
-.desglose-item.descuento span:last-child {
-  color: #e74c3c;
+.desglose-descuento span:last-child {
+  color: var(--success-color);
 }
 
-.desglose-item.mora span:last-child {
-  color: #f39c12;
+.desglose-mora span:last-child {
+  color: var(--warning-color);
 }
 
 .desglose-total {
   display: flex;
   justify-content: space-between;
-  padding: 15px 0 0 0;
-  margin-top: 10px;
-  border-top: 2px solid #333;
-  font-size: 18px;
-  font-weight: 700;
+  align-items: center;
+  padding: 1rem 0 0 0;
+  margin-top: 0.5rem;
+  border-top: 2px solid var(--gray-900);
 }
 
 .desglose-total span:first-child {
-  color: #333;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--gray-900);
 }
 
 .desglose-total span:last-child {
-  color: #667eea;
-  font-size: 24px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .factura-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .desglose-total span:last-child {
+    font-size: 1.25rem;
+  }
 }

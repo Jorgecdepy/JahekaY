@@ -1,118 +1,261 @@
-.dashboard-subtitle {
-  color: #666;
-  font-size: 16px;
-  margin: 5px 0 0 0;
-}
-
-.card-icon {
-  font-size: 48px;
-  margin-bottom: 10px;
-}
-
-.card-footer {
-  font-size: 13px;
-  color: #999;
-  margin-top: 10px;
-}
-
-.card-money {
-  font-size: 28px;
-}
-
-.card-clientes {
-  cursor: pointer;
-  border-left: 4px solid #667eea;
-}
-
-.card-facturas {
-  cursor: pointer;
-  border-left: 4px solid #f39c12;
-}
-
-.card-lecturas {
-  cursor: pointer;
-  border-left: 4px solid #27ae60;
-}
-
-.card-ingresos {
-  border-left: 4px solid #e74c3c;
-}
-
-.dashboard-actions {
-  margin-top: 40px;
-  background: white;
-  padding: 30px;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.dashboard-actions h3 {
-  margin: 0 0 20px 0;
-  color: #333;
-  font-size: 20px;
-}
-
-.action-buttons {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 15px;
-}
-
-.action-btn {
+/* Sidebar Brand */
+.brand-logo {
+  width: 44px;
+  height: 44px;
+  background: var(--primary-color);
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
-  gap: 15px;
-  padding: 20px;
-  background: #f8f9fa;
-  border: 2px solid #e9ecef;
-  border-radius: 8px;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.brand-logo svg {
+  width: 26px;
+  height: 26px;
+  color: white;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.nav-icon {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.nav-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.logout-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Dashboard Content */
+.dashboard-content {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.page-header {
+  margin-bottom: 2rem;
+}
+
+.page-header h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 0.25rem;
+}
+
+.page-subtitle {
+  color: var(--gray-500);
+  font-size: 0.9375rem;
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  box-shadow: var(--shadow);
+  transition: all var(--transition);
   cursor: pointer;
-  transition: all 0.3s;
+  border: 1px solid var(--gray-100);
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.stat-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stat-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.stat-primary .stat-icon {
+  background: var(--primary-light);
+  color: var(--primary-color);
+}
+
+.stat-warning .stat-icon {
+  background: var(--warning-light);
+  color: var(--warning-color);
+}
+
+.stat-success .stat-icon {
+  background: var(--success-light);
+  color: var(--success-color);
+}
+
+.stat-danger .stat-icon {
+  background: var(--danger-light);
+  color: var(--danger-color);
+}
+
+.stat-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gray-500);
+  margin-bottom: 0.25rem;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  line-height: 1.2;
+}
+
+.stat-value-money {
+  font-size: 1.5rem;
+}
+
+.stat-description {
+  font-size: 0.8125rem;
+  color: var(--gray-400);
+  margin-top: 0.25rem;
+}
+
+/* Quick Actions */
+.quick-actions {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--gray-100);
+}
+
+.quick-actions h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: 1.25rem;
+}
+
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.action-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: var(--gray-50);
+  border: 2px solid var(--gray-100);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition);
   text-align: left;
 }
 
-.action-btn:hover {
-  background: #667eea;
-  border-color: #667eea;
+.action-card:hover {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 8px 20px rgba(79, 70, 229, 0.25);
 }
 
-.action-btn:hover .action-icon {
+.action-card:hover .action-icon {
   background: white;
-  color: #667eea;
+  color: var(--primary-color);
 }
 
-.action-btn:hover strong,
-.action-btn:hover p {
+.action-card:hover .action-text strong,
+.action-card:hover .action-text p {
   color: white;
 }
 
 .action-icon {
-  width: 50px;
-  height: 50px;
+  width: 48px;
+  height: 48px;
+  background: var(--primary-color);
+  color: white;
+  border-radius: var(--radius);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #667eea;
-  color: white;
-  border-radius: 8px;
-  font-size: 24px;
   flex-shrink: 0;
-  transition: all 0.3s;
+  transition: all var(--transition);
 }
 
-.action-btn strong {
+.action-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.action-text {
+  flex: 1;
+}
+
+.action-text strong {
   display: block;
-  font-size: 16px;
-  margin-bottom: 5px;
-  color: #333;
-  transition: color 0.3s;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--gray-800);
+  margin-bottom: 0.25rem;
+  transition: color var(--transition);
 }
 
-.action-btn p {
+.action-text p {
+  font-size: 0.8125rem;
+  color: var(--gray-500);
   margin: 0;
-  font-size: 13px;
-  color: #666;
-  transition: color 0.3s;
+  transition: color var(--transition);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dashboard-content {
+    padding: 1.5rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .actions-grid {
+    grid-template-columns: 1fr;
+  }
 }

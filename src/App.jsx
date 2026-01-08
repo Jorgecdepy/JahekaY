@@ -25,23 +25,29 @@ function App() {
   }, [])
 
   if (loading) {
-    return <div className="loading">Cargando JahekaY...</div>
+    return (
+      <div className="loading">
+        <div className="loading-logo">JahekaY</div>
+        <div className="spinner spinner-lg"></div>
+        <p className="loading-text">Cargando sistema...</p>
+      </div>
+    )
   }
 
   return (
     <Router>
       <Routes>
-        <Route 
-          path="/login" 
-          element={!session ? <Login /> : <Navigate to="/dashboard" />} 
+        <Route
+          path="/login"
+          element={!session ? <Login /> : <Navigate to="/dashboard" />}
         />
-        <Route 
-          path="/dashboard" 
-          element={session ? <Dashboard /> : <Navigate to="/login" />} 
+        <Route
+          path="/dashboard"
+          element={session ? <Dashboard /> : <Navigate to="/login" />}
         />
-        <Route 
-          path="/" 
-          element={<Navigate to={session ? "/dashboard" : "/login"} />} 
+        <Route
+          path="/"
+          element={<Navigate to={session ? "/dashboard" : "/login"} />}
         />
       </Routes>
     </Router>
