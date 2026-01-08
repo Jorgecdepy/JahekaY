@@ -22,6 +22,27 @@ function Configuracion() {
     fecha_inicio: new Date().toISOString().split('T')[0]
   })
 
+  // Estados para empleados
+  const [empleados, setEmpleados] = useState([])
+  const [roles, setRoles] = useState([])
+  const [isModalEmpleadoOpen, setIsModalEmpleadoOpen] = useState(false)
+  const [isModalAsignacionOpen, setIsModalAsignacionOpen] = useState(false)
+  const [savingEmpleado, setSavingEmpleado] = useState(false)
+  const [empleadoEditar, setEmpleadoEditar] = useState(null)
+  const [empleadoAsignar, setEmpleadoAsignar] = useState(null)
+  const [clientes, setClientes] = useState([])
+  const [clientesSeleccionados, setClientesSeleccionados] = useState([])
+  const [formDataEmpleado, setFormDataEmpleado] = useState({
+    nombre_completo: '',
+    email: '',
+    telefono: '',
+    direccion: '',
+    rol_id: '',
+    fecha_contratacion: new Date().toISOString().split('T')[0],
+    salario: '',
+    notas: ''
+  })
+
   const [config, setConfig] = useState({
     facturacion_automatica_activa: false,
     facturacion_dia_mes: '1',
@@ -35,6 +56,9 @@ function Configuracion() {
     cargarConfiguracion()
     cargarHistorial()
     cargarTarifas()
+    cargarRoles()
+    cargarEmpleados()
+    cargarClientes()
   }, [])
 
   const cargarConfiguracion = async () => {
@@ -247,6 +271,199 @@ function Configuracion() {
       currency: 'PYG',
       minimumFractionDigits: 0
     }).format(monto || 0)
+  }
+
+  // ================================================================
+  // FUNCIONES DE EMPLEADOS
+  // ================================================================
+
+  const cargarRoles = async () => {
+    const { data, error } = await supabase
+      .from('roles')
+      .select('*')
+      .order('nombre', { ascending: true })
+
+    if (error) {
+      console.error('Error al cargar roles:', error)
+    } else {
+      setRoles(data || [])
+    }
+  }
+
+  const cargarEmpleados = async () => {
+    const { data, error } = await supabase
+      .from('vista_empleados_roles')
+      .select('*')
+      .order('nombre_completo', { ascending: true })
+
+    if (error) {
+      console.error('Error al cargar empleados:', error)
+    } else {
+      setEmpleados(data || [])
+    }
+  }
+
+  const cargarClientes = async () => {
+    const { data, error } = await supabase
+      .from('usuarios')
+      .select('id, nombre_completo, numero_medidor, direccion')
+      .eq('activo', true)
+      .order('nombre_completo', { ascending: true })
+
+    if (error) {
+      console.error('Error al cargar clientes:', error)
+    } else {
+      setClientes(data || [])
+    }
+  }
+
+  const abrirModalNuevoEmpleado = () => {
+    setEmpleadoEditar(null)
+    setFormDataEmpleado({
+      nombre_completo: '',
+      email: '',
+      telefono: '',
+      direccion: '',
+      rol_id: roles[0]?.id || '',
+      fecha_contratacion: new Date().toISOString().split('T')[0],
+      salario: '',
+      notas: ''
+    })
+    setIsModalEmpleadoOpen(true)
+  }
+
+  const abrirModalEditarEmpleado = (empleado) => {
+    setEmpleadoEditar(empleado)
+    setFormDataEmpleado({
+      nombre_completo: empleado.nombre_completo,
+      email: empleado.email,
+      telefono: empleado.telefono || '',
+      direccion: empleado.direccion || '',
+      rol_id: empleado.rol_id || '',
+      fecha_contratacion: empleado.fecha_contratacion || new Date().toISOString().split('T')[0],
+      salario: empleado.salario || '',
+      notas: empleado.notas || ''
+    })
+    setIsModalEmpleadoOpen(true)
+  }
+
+  const abrirModalAsignacion = async (empleado) => {
+    setEmpleadoAsignar(empleado)
+
+    // Cargar asignaciones actuales del empleado
+    const { data, error } = await supabase
+      .from('asignaciones_empleados')
+      .select('cliente_id')
+      .eq('empleado_id', empleado.id)
+      .eq('activo', true)
+
+    if (!error && data) {
+      setClientesSeleccionados(data.map(a => a.cliente_id))
+    }
+
+    setIsModalAsignacionOpen(true)
+  }
+
+  const handleSubmitEmpleado = async (e) => {
+    e.preventDefault()
+    setSavingEmpleado(true)
+
+    try {
+      const empleadoData = {
+        nombre_completo: formDataEmpleado.nombre_completo,
+        email: formDataEmpleado.email,
+        telefono: formDataEmpleado.telefono,
+        direccion: formDataEmpleado.direccion,
+        rol_id: formDataEmpleado.rol_id,
+        fecha_contratacion: formDataEmpleado.fecha_contratacion,
+        salario: formDataEmpleado.salario ? parseFloat(formDataEmpleado.salario) : null,
+        notas: formDataEmpleado.notas,
+        activo: true
+      }
+
+      let error
+      if (empleadoEditar) {
+        // Actualizar empleado existente
+        const result = await supabase
+          .from('empleados')
+          .update(empleadoData)
+          .eq('id', empleadoEditar.id)
+        error = result.error
+      } else {
+        // Crear nuevo empleado
+        const result = await supabase
+          .from('empleados')
+          .insert([empleadoData])
+        error = result.error
+      }
+
+      if (error) throw error
+
+      setIsModalEmpleadoOpen(false)
+      mostrarMensaje(
+        empleadoEditar ? 'Empleado actualizado exitosamente' : 'Empleado creado exitosamente',
+        'success'
+      )
+      cargarEmpleados()
+    } catch (error) {
+      console.error('Error:', error)
+      mostrarMensaje('Error al guardar el empleado: ' + error.message, 'error')
+    }
+
+    setSavingEmpleado(false)
+  }
+
+  const toggleEmpleadoActivo = async (empleadoId, estadoActual) => {
+    const { error } = await supabase
+      .from('empleados')
+      .update({ activo: !estadoActual })
+      .eq('id', empleadoId)
+
+    if (error) {
+      console.error('Error:', error)
+      mostrarMensaje('Error al actualizar el empleado', 'error')
+    } else {
+      mostrarMensaje(
+        `Empleado ${!estadoActual ? 'activado' : 'desactivado'} exitosamente`,
+        'success'
+      )
+      cargarEmpleados()
+    }
+  }
+
+  const handleSubmitAsignacion = async (e) => {
+    e.preventDefault()
+    setSavingEmpleado(true)
+
+    try {
+      const { data, error } = await supabase.rpc('asignar_clientes_empleado', {
+        p_empleado_id: empleadoAsignar.id,
+        p_cliente_ids: clientesSeleccionados,
+        p_tipo_asignacion: 'lectura',
+        p_zona: null
+      })
+
+      if (error) throw error
+
+      setIsModalAsignacionOpen(false)
+      mostrarMensaje(data.mensaje || 'Asignaciones actualizadas exitosamente', 'success')
+      cargarEmpleados()
+    } catch (error) {
+      console.error('Error:', error)
+      mostrarMensaje('Error al guardar asignaciones: ' + error.message, 'error')
+    }
+
+    setSavingEmpleado(false)
+  }
+
+  const toggleClienteSeleccionado = (clienteId) => {
+    setClientesSeleccionados(prev => {
+      if (prev.includes(clienteId)) {
+        return prev.filter(id => id !== clienteId)
+      } else {
+        return [...prev, clienteId]
+      }
+    })
   }
 
   const getEstadoBadge = (estado) => {
@@ -593,6 +810,357 @@ function Configuracion() {
           )}
         </div>
       </div>
+
+      {/* Gestión de Empleados */}
+      <div className="config-section">
+        <div className="config-section-header">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h3>Gestión de Empleados</h3>
+              <p>Administra empleados, roles y asignaciones</p>
+            </div>
+            <button className="btn-primary" onClick={abrirModalNuevoEmpleado}>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Nuevo Empleado
+            </button>
+          </div>
+        </div>
+
+        <div className="tarifas-resumen">
+          <div className="tarifa-resumen-card">
+            <div className="tarifa-resumen-icon tarifa-resumen-icon-success">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+            </div>
+            <div>
+              <span className="tarifa-resumen-label">Total Empleados</span>
+              <span className="tarifa-resumen-value">
+                {empleados.length}
+              </span>
+            </div>
+          </div>
+
+          <div className="tarifa-resumen-card">
+            <div className="tarifa-resumen-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </div>
+            <div>
+              <span className="tarifa-resumen-label">Empleados Activos</span>
+              <span className="tarifa-resumen-value">
+                {empleados.filter(e => e.activo).length}
+              </span>
+            </div>
+          </div>
+
+          <div className="tarifa-resumen-card">
+            <div className="tarifa-resumen-icon tarifa-resumen-icon-warning">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="8.5" cy="7" r="4"></circle>
+                <polyline points="17 11 19 13 23 9"></polyline>
+              </svg>
+            </div>
+            <div>
+              <span className="tarifa-resumen-label">Total Roles</span>
+              <span className="tarifa-resumen-value">
+                {roles.length}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Rol</th>
+                <th>Teléfono</th>
+                <th>Fecha Contratación</th>
+                <th>Asignaciones</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {empleados.map((empleado) => (
+                <tr key={empleado.id} className={!empleado.activo ? 'row-inactive' : ''}>
+                  <td className="td-name">
+                    <strong>{empleado.nombre_completo}</strong>
+                  </td>
+                  <td>{empleado.email}</td>
+                  <td>
+                    <span className="badge badge-info">
+                      {empleado.rol_nombre || 'Sin rol'}
+                    </span>
+                  </td>
+                  <td>{empleado.telefono || '-'}</td>
+                  <td>{empleado.fecha_contratacion ? formatFechaSolo(empleado.fecha_contratacion) : '-'}</td>
+                  <td className="text-center">
+                    <span className="badge badge-secondary">
+                      {empleado.total_asignaciones} clientes
+                    </span>
+                  </td>
+                  <td>
+                    <span className={`badge ${empleado.activo ? 'badge-success' : 'badge-secondary'}`}>
+                      {empleado.activo ? 'ACTIVO' : 'INACTIVO'}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="action-buttons">
+                      <button
+                        className="btn-icon btn-icon-info"
+                        title="Asignar clientes"
+                        onClick={() => abrirModalAsignacion(empleado)}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                          <circle cx="8.5" cy="7" r="4"></circle>
+                          <line x1="20" y1="8" x2="20" y2="14"></line>
+                          <line x1="23" y1="11" x2="17" y2="11"></line>
+                        </svg>
+                      </button>
+                      <button
+                        className="btn-icon btn-icon-primary"
+                        title="Editar"
+                        onClick={() => abrirModalEditarEmpleado(empleado)}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                      </button>
+                      <button
+                        className={`btn-icon ${empleado.activo ? 'btn-icon-warning' : 'btn-icon-success'}`}
+                        title={empleado.activo ? 'Desactivar' : 'Activar'}
+                        onClick={() => toggleEmpleadoActivo(empleado.id, empleado.activo)}
+                      >
+                        {empleado.activo ? (
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                          </svg>
+                        ) : (
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {empleados.length === 0 && (
+            <div className="empty-state">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              <p>No hay empleados registrados</p>
+              <span>Agregue un nuevo empleado para comenzar</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Modal para Nuevo/Editar Empleado */}
+      <Modal
+        isOpen={isModalEmpleadoOpen}
+        onClose={() => setIsModalEmpleadoOpen(false)}
+        title={empleadoEditar ? 'Editar Empleado' : 'Nuevo Empleado'}
+      >
+        <form onSubmit={handleSubmitEmpleado} className="form-container">
+          <div className="form-group">
+            <label>Nombre Completo *</label>
+            <input
+              type="text"
+              value={formDataEmpleado.nombre_completo}
+              onChange={(e) => setFormDataEmpleado({...formDataEmpleado, nombre_completo: e.target.value})}
+              placeholder="Juan Pérez"
+              required
+            />
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label>Email *</label>
+              <input
+                type="email"
+                value={formDataEmpleado.email}
+                onChange={(e) => setFormDataEmpleado({...formDataEmpleado, email: e.target.value})}
+                placeholder="juan@ejemplo.com"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label>Teléfono</label>
+              <input
+                type="tel"
+                value={formDataEmpleado.telefono}
+                onChange={(e) => setFormDataEmpleado({...formDataEmpleado, telefono: e.target.value})}
+                placeholder="0981123456"
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label>Dirección</label>
+            <input
+              type="text"
+              value={formDataEmpleado.direccion}
+              onChange={(e) => setFormDataEmpleado({...formDataEmpleado, direccion: e.target.value})}
+              placeholder="Calle 1, Ciudad"
+            />
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label>Rol *</label>
+              <select
+                value={formDataEmpleado.rol_id}
+                onChange={(e) => setFormDataEmpleado({...formDataEmpleado, rol_id: e.target.value})}
+                required
+              >
+                <option value="">Seleccione un rol</option>
+                {roles.map(rol => (
+                  <option key={rol.id} value={rol.id}>
+                    {rol.nombre}
+                  </option>
+                ))}
+              </select>
+              <small className="form-hint">
+                {roles.find(r => r.id === formDataEmpleado.rol_id)?.descripcion || 'Seleccione un rol para ver su descripción'}
+              </small>
+            </div>
+            <div className="form-group">
+              <label>Fecha de Contratación</label>
+              <input
+                type="date"
+                value={formDataEmpleado.fecha_contratacion}
+                onChange={(e) => setFormDataEmpleado({...formDataEmpleado, fecha_contratacion: e.target.value})}
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label>Salario (Gs.)</label>
+            <input
+              type="number"
+              min="0"
+              value={formDataEmpleado.salario}
+              onChange={(e) => setFormDataEmpleado({...formDataEmpleado, salario: e.target.value})}
+              placeholder="2500000"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Notas</label>
+            <textarea
+              value={formDataEmpleado.notas}
+              onChange={(e) => setFormDataEmpleado({...formDataEmpleado, notas: e.target.value})}
+              placeholder="Observaciones adicionales..."
+              rows="3"
+            />
+          </div>
+
+          <div className="form-actions">
+            <button type="button" className="btn-secondary" onClick={() => setIsModalEmpleadoOpen(false)}>
+              Cancelar
+            </button>
+            <button type="submit" className="btn-primary" disabled={savingEmpleado}>
+              {savingEmpleado ? (
+                <>
+                  <span className="spinner"></span>
+                  Guardando...
+                </>
+              ) : (
+                empleadoEditar ? 'Actualizar Empleado' : 'Crear Empleado'
+              )}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Modal para Asignación de Clientes */}
+      <Modal
+        isOpen={isModalAsignacionOpen}
+        onClose={() => setIsModalAsignacionOpen(false)}
+        title={`Asignar Clientes a ${empleadoAsignar?.nombre_completo}`}
+      >
+        <form onSubmit={handleSubmitAsignacion} className="form-container">
+          <div className="form-group">
+            <label>Seleccione los clientes a asignar:</label>
+            <div className="clientes-checkboxes">
+              <div className="clientes-header">
+                <button
+                  type="button"
+                  className="btn-link"
+                  onClick={() => setClientesSeleccionados(clientes.map(c => c.id))}
+                >
+                  Seleccionar todos
+                </button>
+                <button
+                  type="button"
+                  className="btn-link"
+                  onClick={() => setClientesSeleccionados([])}
+                >
+                  Limpiar selección
+                </button>
+              </div>
+              <div className="clientes-list">
+                {clientes.map(cliente => (
+                  <label key={cliente.id} className="cliente-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={clientesSeleccionados.includes(cliente.id)}
+                      onChange={() => toggleClienteSeleccionado(cliente.id)}
+                    />
+                    <span className="cliente-info">
+                      <strong>{cliente.nombre_completo}</strong>
+                      <small>Medidor: {cliente.numero_medidor} - {cliente.direccion}</small>
+                    </span>
+                  </label>
+                ))}
+              </div>
+              <p className="form-hint">
+                {clientesSeleccionados.length} cliente(s) seleccionado(s)
+              </p>
+            </div>
+          </div>
+
+          <div className="form-actions">
+            <button type="button" className="btn-secondary" onClick={() => setIsModalAsignacionOpen(false)}>
+              Cancelar
+            </button>
+            <button type="submit" className="btn-primary" disabled={savingEmpleado}>
+              {savingEmpleado ? (
+                <>
+                  <span className="spinner"></span>
+                  Guardando...
+                </>
+              ) : (
+                'Guardar Asignaciones'
+              )}
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       {/* Modal para Nueva Tarifa */}
       <Modal
