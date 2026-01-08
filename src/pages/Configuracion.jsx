@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../services/supabase'
+import Modal from '../components/Modal'
 import './Configuracion.css'
 
 function Configuracion() {
@@ -8,6 +9,18 @@ function Configuracion() {
   const [ejecutando, setEjecutando] = useState(false)
   const [historial, setHistorial] = useState([])
   const [mensaje, setMensaje] = useState(null)
+
+  // Estados para tarifas
+  const [tarifas, setTarifas] = useState([])
+  const [isModalTarifaOpen, setIsModalTarifaOpen] = useState(false)
+  const [savingTarifa, setSavingTarifa] = useState(false)
+  const [formDataTarifa, setFormDataTarifa] = useState({
+    rango_desde: '',
+    rango_hasta: '',
+    precio_por_m3: '',
+    cargo_fijo_mensual: '',
+    fecha_inicio: new Date().toISOString().split('T')[0]
+  })
 
   const [config, setConfig] = useState({
     facturacion_automatica_activa: false,
@@ -21,6 +34,7 @@ function Configuracion() {
   useEffect(() => {
     cargarConfiguracion()
     cargarHistorial()
+    cargarTarifas()
   }, [])
 
   const cargarConfiguracion = async () => {
@@ -141,6 +155,74 @@ function Configuracion() {
     setTimeout(() => setMensaje(null), 5000)
   }
 
+  // ================================================================
+  // FUNCIONES DE TARIFAS
+  // ================================================================
+
+  const cargarTarifas = async () => {
+    const { data, error } = await supabase
+      .from('tarifas')
+      .select('*')
+      .order('rango_desde', { ascending: true })
+
+    if (error) {
+      console.error('Error al cargar tarifas:', error)
+    } else {
+      setTarifas(data || [])
+    }
+  }
+
+  const toggleTarifaActiva = async (tarifaId, estadoActual) => {
+    const { error } = await supabase
+      .from('tarifas')
+      .update({ activo: !estadoActual })
+      .eq('id', tarifaId)
+
+    if (error) {
+      console.error('Error:', error)
+      mostrarMensaje('Error al actualizar la tarifa', 'error')
+    } else {
+      mostrarMensaje(
+        `Tarifa ${!estadoActual ? 'activada' : 'desactivada'} exitosamente`,
+        'success'
+      )
+      cargarTarifas()
+    }
+  }
+
+  const handleSubmitTarifa = async (e) => {
+    e.preventDefault()
+    setSavingTarifa(true)
+
+    const { error } = await supabase
+      .from('tarifas')
+      .insert([{
+        rango_desde: parseInt(formDataTarifa.rango_desde),
+        rango_hasta: formDataTarifa.rango_hasta ? parseInt(formDataTarifa.rango_hasta) : null,
+        precio_por_m3: parseFloat(formDataTarifa.precio_por_m3),
+        cargo_fijo_mensual: parseFloat(formDataTarifa.cargo_fijo_mensual),
+        fecha_inicio: formDataTarifa.fecha_inicio,
+        activo: true
+      }])
+
+    if (error) {
+      console.error('Error:', error)
+      mostrarMensaje('Error al guardar la tarifa', 'error')
+    } else {
+      setIsModalTarifaOpen(false)
+      setFormDataTarifa({
+        rango_desde: '',
+        rango_hasta: '',
+        precio_por_m3: '',
+        cargo_fijo_mensual: '',
+        fecha_inicio: new Date().toISOString().split('T')[0]
+      })
+      mostrarMensaje('Tarifa creada exitosamente', 'success')
+      cargarTarifas()
+    }
+    setSavingTarifa(false)
+  }
+
   const formatFecha = (fecha) => {
     return new Date(fecha).toLocaleString('es-PY', {
       year: 'numeric',
@@ -149,6 +231,22 @@ function Configuracion() {
       hour: '2-digit',
       minute: '2-digit'
     })
+  }
+
+  const formatFechaSolo = (fecha) => {
+    return new Date(fecha).toLocaleDateString('es-PY', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    })
+  }
+
+  const formatMonto = (monto) => {
+    return new Intl.NumberFormat('es-PY', {
+      style: 'currency',
+      currency: 'PYG',
+      minimumFractionDigits: 0
+    }).format(monto || 0)
   }
 
   const getEstadoBadge = (estado) => {
@@ -382,6 +480,203 @@ function Configuracion() {
           )}
         </div>
       </div>
+
+      {/* Gestión de Tarifas */}
+      <div className="config-section">
+        <div className="config-section-header">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h3>Gestión de Tarifas</h3>
+              <p>Configura los precios por consumo de agua</p>
+            </div>
+            <button className="btn-primary" onClick={() => setIsModalTarifaOpen(true)}>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Nueva Tarifa
+            </button>
+          </div>
+        </div>
+
+        <div className="tarifas-resumen">
+          <div className="tarifa-resumen-card">
+            <div className="tarifa-resumen-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="12" y1="1" x2="12" y2="23"></line>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+              </svg>
+            </div>
+            <div>
+              <span className="tarifa-resumen-label">Cargo Fijo Mensual</span>
+              <span className="tarifa-resumen-value">
+                {formatMonto(tarifas.find(t => t.activo)?.cargo_fijo_mensual || 0)}
+              </span>
+            </div>
+          </div>
+
+          <div className="tarifa-resumen-card">
+            <div className="tarifa-resumen-icon tarifa-resumen-icon-success">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg>
+            </div>
+            <div>
+              <span className="tarifa-resumen-label">Tarifas Activas</span>
+              <span className="tarifa-resumen-value">
+                {tarifas.filter(t => t.activo).length}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Rango (m³)</th>
+                <th>Precio por m³</th>
+                <th>Cargo Fijo</th>
+                <th>Fecha Inicio</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tarifas.map((tarifa) => (
+                <tr key={tarifa.id} className={!tarifa.activo ? 'row-inactive' : ''}>
+                  <td className="td-range">
+                    {tarifa.rango_desde} - {tarifa.rango_hasta || '∞'}
+                  </td>
+                  <td className="td-price">{formatMonto(tarifa.precio_por_m3)}</td>
+                  <td>{formatMonto(tarifa.cargo_fijo_mensual)}</td>
+                  <td>{formatFechaSolo(tarifa.fecha_inicio)}</td>
+                  <td>
+                    <span className={`badge ${tarifa.activo ? 'badge-success' : 'badge-secondary'}`}>
+                      {tarifa.activo ? 'ACTIVO' : 'INACTIVO'}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="action-buttons">
+                      <button
+                        className={`btn-icon ${tarifa.activo ? 'btn-icon-warning' : 'btn-icon-success'}`}
+                        title={tarifa.activo ? 'Desactivar' : 'Activar'}
+                        onClick={() => toggleTarifaActiva(tarifa.id, tarifa.activo)}
+                      >
+                        {tarifa.activo ? (
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                          </svg>
+                        ) : (
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {tarifas.length === 0 && (
+            <div className="empty-state">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <line x1="12" y1="1" x2="12" y2="23"></line>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+              </svg>
+              <p>No hay tarifas configuradas</p>
+              <span>Agregue una nueva tarifa para comenzar</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Modal para Nueva Tarifa */}
+      <Modal
+        isOpen={isModalTarifaOpen}
+        onClose={() => setIsModalTarifaOpen(false)}
+        title="Nueva Tarifa"
+      >
+        <form onSubmit={handleSubmitTarifa} className="form-container">
+          <div className="form-row">
+            <div className="form-group">
+              <label>Rango Desde (m³) *</label>
+              <input
+                type="number"
+                min="0"
+                value={formDataTarifa.rango_desde}
+                onChange={(e) => setFormDataTarifa({...formDataTarifa, rango_desde: e.target.value})}
+                placeholder="0"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label>Rango Hasta (m³)</label>
+              <input
+                type="number"
+                min="0"
+                value={formDataTarifa.rango_hasta}
+                onChange={(e) => setFormDataTarifa({...formDataTarifa, rango_hasta: e.target.value})}
+                placeholder="Dejar vacío para infinito"
+              />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label>Precio por m³ (Gs.) *</label>
+              <input
+                type="number"
+                min="0"
+                value={formDataTarifa.precio_por_m3}
+                onChange={(e) => setFormDataTarifa({...formDataTarifa, precio_por_m3: e.target.value})}
+                placeholder="1000"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label>Cargo Fijo Mensual (Gs.) *</label>
+              <input
+                type="number"
+                min="0"
+                value={formDataTarifa.cargo_fijo_mensual}
+                onChange={(e) => setFormDataTarifa({...formDataTarifa, cargo_fijo_mensual: e.target.value})}
+                placeholder="5000"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label>Fecha de Inicio *</label>
+            <input
+              type="date"
+              value={formDataTarifa.fecha_inicio}
+              onChange={(e) => setFormDataTarifa({...formDataTarifa, fecha_inicio: e.target.value})}
+              required
+            />
+          </div>
+
+          <div className="form-actions">
+            <button type="button" className="btn-secondary" onClick={() => setIsModalTarifaOpen(false)}>
+              Cancelar
+            </button>
+            <button type="submit" className="btn-primary" disabled={savingTarifa}>
+              {savingTarifa ? (
+                <>
+                  <span className="spinner"></span>
+                  Guardando...
+                </>
+              ) : (
+                'Guardar Tarifa'
+              )}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   )
 }
