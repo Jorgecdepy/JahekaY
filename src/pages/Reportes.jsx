@@ -338,201 +338,789 @@ function Reportes() {
   }
 
   // ================================================================
-  // GENERACIÓN DE PDF
+  // GENERACIÓN DE PDF - FORMATO EJECUTIVO PROFESIONAL
   // ================================================================
+
+  // Constantes de diseño
+  const PDF_CONFIG = {
+    margin: { left: 20, right: 20, top: 15, bottom: 15 },
+    colors: {
+      primary: [99, 102, 241],      // Azul principal
+      success: [34, 197, 94],       // Verde
+      danger: [239, 68, 68],        // Rojo
+      warning: [245, 158, 11],      // Amarillo
+      gray: [156, 163, 175],        // Gris
+      lightGray: [243, 244, 246],   // Gris claro
+      darkGray: [55, 65, 81]        // Gris oscuro
+    },
+    fontSize: {
+      title: 22,
+      subtitle: 14,
+      sectionTitle: 13,
+      normal: 10,
+      small: 8,
+      tiny: 7
+    }
+  }
+
+  // ============================================================
+  // FUNCIONES AUXILIARES PARA ELEMENTOS VISUALES
+  // ============================================================
+
+  /**
+   * Dibuja un rectángulo con bordes y relleno opcional
+   */
+  const drawBox = (doc, x, y, width, height, options = {}) => {
+    const { fillColor, borderColor, borderWidth = 0.5 } = options
+
+    if (fillColor) {
+      doc.setFillColor(...fillColor)
+      doc.rect(x, y, width, height, 'F')
+    }
+
+    if (borderColor || !fillColor) {
+      doc.setDrawColor(...(borderColor || PDF_CONFIG.colors.gray))
+      doc.setLineWidth(borderWidth)
+      doc.rect(x, y, width, height, 'S')
+    }
+  }
+
+  /**
+   * Dibuja encabezado de página profesional
+   */
+  const drawPageHeader = (doc, pageWidth, isFirstPage = false) => {
+    if (isFirstPage) {
+      // Encabezado principal con fondo
+      doc.setFillColor(...PDF_CONFIG.colors.primary)
+      doc.rect(0, 0, pageWidth, 45, 'F')
+
+      // Título del sistema
+      doc.setTextColor(255, 255, 255)
+      doc.setFontSize(PDF_CONFIG.fontSize.title)
+      doc.setFont(undefined, 'bold')
+      doc.text('SISTEMA DE GESTIÓN JAHEKAY', pageWidth / 2, 20, { align: 'center' })
+
+      // Subtítulo
+      doc.setFontSize(PDF_CONFIG.fontSize.subtitle)
+      doc.setFont(undefined, 'normal')
+      doc.text('Reporte Ejecutivo de Análisis', pageWidth / 2, 32, { align: 'center' })
+
+      doc.setTextColor(0, 0, 0)
+      return 50
+    } else {
+      // Encabezado reducido para páginas siguientes
+      doc.setFillColor(...PDF_CONFIG.colors.lightGray)
+      doc.rect(0, 0, pageWidth, 20, 'F')
+
+      doc.setTextColor(...PDF_CONFIG.colors.primary)
+      doc.setFontSize(PDF_CONFIG.fontSize.normal)
+      doc.setFont(undefined, 'bold')
+      doc.text('SISTEMA JAHEKAY', PDF_CONFIG.margin.left, 12)
+
+      doc.setTextColor(0, 0, 0)
+      return 25
+    }
+  }
+
+  /**
+   * Dibuja pie de página con metadata
+   */
+  const drawPageFooter = (doc, pageNum, totalPages, pageWidth, pageHeight) => {
+    const y = pageHeight - 10
+
+    // Línea superior del footer
+    doc.setDrawColor(...PDF_CONFIG.colors.gray)
+    doc.setLineWidth(0.5)
+    doc.line(PDF_CONFIG.margin.left, y - 5, pageWidth - PDF_CONFIG.margin.right, y - 5)
+
+    // Información del footer
+    doc.setFontSize(PDF_CONFIG.fontSize.tiny)
+    doc.setTextColor(...PDF_CONFIG.colors.gray)
+
+    // Fecha de generación (izquierda)
+    const fechaGen = new Date().toLocaleString('es-PY', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+    doc.text(`Generado: ${fechaGen}`, PDF_CONFIG.margin.left, y)
+
+    // Número de página (centro)
+    doc.text(`Página ${pageNum} de ${totalPages}`, pageWidth / 2, y, { align: 'center' })
+
+    // Sistema (derecha)
+    doc.text('JahekaY v1.0', pageWidth - PDF_CONFIG.margin.right, y, { align: 'right' })
+
+    doc.setTextColor(0, 0, 0)
+  }
+
+  /**
+   * Dibuja título de sección con fondo
+   */
+  const drawSectionTitle = (doc, text, y, pageWidth) => {
+    const height = 10
+
+    // Fondo de la sección
+    doc.setFillColor(...PDF_CONFIG.colors.lightGray)
+    doc.rect(PDF_CONFIG.margin.left, y, pageWidth - PDF_CONFIG.margin.left - PDF_CONFIG.margin.right, height, 'F')
+
+    // Borde izquierdo de color
+    doc.setFillColor(...PDF_CONFIG.colors.primary)
+    doc.rect(PDF_CONFIG.margin.left, y, 3, height, 'F')
+
+    // Texto del título
+    doc.setFontSize(PDF_CONFIG.fontSize.sectionTitle)
+    doc.setFont(undefined, 'bold')
+    doc.setTextColor(...PDF_CONFIG.colors.darkGray)
+    doc.text(text.toUpperCase(), PDF_CONFIG.margin.left + 8, y + 7)
+
+    doc.setTextColor(0, 0, 0)
+    doc.setFont(undefined, 'normal')
+
+    return y + height + 2
+  }
+
+  /**
+   * Dibuja caja de métrica destacada
+   */
+  const drawMetricBox = (doc, x, y, width, height, label, value, color) => {
+    // Caja con borde
+    drawBox(doc, x, y, width, height, {
+      fillColor: [255, 255, 255],
+      borderColor: color,
+      borderWidth: 1.5
+    })
+
+    // Etiqueta
+    doc.setFontSize(PDF_CONFIG.fontSize.small)
+    doc.setTextColor(...PDF_CONFIG.colors.gray)
+    doc.text(label.toUpperCase(), x + width / 2, y + height * 0.35, { align: 'center' })
+
+    // Valor
+    doc.setFontSize(PDF_CONFIG.fontSize.subtitle)
+    doc.setFont(undefined, 'bold')
+    doc.setTextColor(...color)
+    doc.text(value, x + width / 2, y + height * 0.7, { align: 'center' })
+
+    doc.setFont(undefined, 'normal')
+    doc.setTextColor(0, 0, 0)
+  }
+
+  /**
+   * Dibuja una tabla profesional con bordes
+   */
+  const drawTable = (doc, headers, rows, startY, pageWidth, pageHeight, onNewPage) => {
+    const tableWidth = pageWidth - PDF_CONFIG.margin.left - PDF_CONFIG.margin.right
+    const colWidth = tableWidth / headers.length
+    const rowHeight = 8
+    const headerHeight = 10
+    let currentY = startY
+
+    // Función para verificar si necesita nueva página
+    const checkNewPage = (neededHeight) => {
+      if (currentY + neededHeight > pageHeight - 30) {
+        onNewPage()
+        currentY = 25
+        drawTableHeader()
+      }
+    }
+
+    // Dibuja encabezado de tabla
+    const drawTableHeader = () => {
+      // Fondo del encabezado
+      doc.setFillColor(...PDF_CONFIG.colors.primary)
+      doc.rect(PDF_CONFIG.margin.left, currentY, tableWidth, headerHeight, 'F')
+
+      // Bordes del encabezado
+      doc.setDrawColor(255, 255, 255)
+      doc.setLineWidth(0.5)
+
+      headers.forEach((header, i) => {
+        const x = PDF_CONFIG.margin.left + (i * colWidth)
+
+        // Borde vertical
+        if (i > 0) {
+          doc.line(x, currentY, x, currentY + headerHeight)
+        }
+
+        // Texto del encabezado
+        doc.setTextColor(255, 255, 255)
+        doc.setFontSize(PDF_CONFIG.fontSize.small)
+        doc.setFont(undefined, 'bold')
+        doc.text(
+          header.toUpperCase(),
+          x + colWidth / 2,
+          currentY + headerHeight / 2 + 1,
+          { align: 'center', baseline: 'middle' }
+        )
+      })
+
+      currentY += headerHeight
+      doc.setTextColor(0, 0, 0)
+      doc.setFont(undefined, 'normal')
+    }
+
+    // Dibuja encabezado inicial
+    drawTableHeader()
+
+    // Dibuja filas
+    rows.forEach((row, rowIndex) => {
+      checkNewPage(rowHeight)
+
+      // Fondo alternado
+      if (rowIndex % 2 === 0) {
+        doc.setFillColor(...PDF_CONFIG.colors.lightGray)
+        doc.rect(PDF_CONFIG.margin.left, currentY, tableWidth, rowHeight, 'F')
+      }
+
+      // Bordes de la fila
+      doc.setDrawColor(...PDF_CONFIG.colors.gray)
+      doc.setLineWidth(0.3)
+
+      row.forEach((cell, colIndex) => {
+        const x = PDF_CONFIG.margin.left + (colIndex * colWidth)
+
+        // Borde vertical
+        if (colIndex > 0) {
+          doc.line(x, currentY, x, currentY + rowHeight)
+        }
+
+        // Texto de la celda
+        doc.setFontSize(PDF_CONFIG.fontSize.small)
+        doc.setTextColor(...PDF_CONFIG.colors.darkGray)
+
+        // Alinear números a la derecha, texto a la izquierda
+        const align = typeof cell === 'string' && cell.match(/^[₲\d,.\s]+$/) ? 'right' : 'left'
+        const textX = align === 'right' ? x + colWidth - 3 : x + 3
+
+        doc.text(
+          String(cell),
+          textX,
+          currentY + rowHeight / 2 + 1,
+          { align, baseline: 'middle', maxWidth: colWidth - 6 }
+        )
+      })
+
+      // Borde inferior de la fila
+      doc.line(
+        PDF_CONFIG.margin.left,
+        currentY + rowHeight,
+        pageWidth - PDF_CONFIG.margin.right,
+        currentY + rowHeight
+      )
+
+      currentY += rowHeight
+    })
+
+    doc.setTextColor(0, 0, 0)
+    return currentY + 5
+  }
+
+  // ============================================================
+  // FUNCIÓN PRINCIPAL DE GENERACIÓN DE PDF
+  // ============================================================
 
   const descargarPDF = () => {
     if (!datosReporte) return
 
     const doc = new jsPDF()
     const pageWidth = doc.internal.pageSize.width
-    let y = 20
+    const pageHeight = doc.internal.pageSize.height
+    let currentPage = 1
 
-    // Encabezado
-    doc.setFontSize(18)
-    doc.text('Sistema JahekaY', pageWidth / 2, y, { align: 'center' })
-    y += 10
-    doc.setFontSize(14)
-    doc.text(datosReporte.titulo, pageWidth / 2, y, { align: 'center' })
-    y += 8
-    doc.setFontSize(11)
-    doc.text(datosReporte.periodo, pageWidth / 2, y, { align: 'center' })
-    y += 10
-    doc.line(20, y, pageWidth - 20, y)
-    y += 10
+    // Función para agregar nueva página con encabezado
+    const addNewPage = () => {
+      doc.addPage()
+      currentPage++
+      return drawPageHeader(doc, pageWidth, false)
+    }
 
-    // Resumen según tipo de reporte
-    doc.setFontSize(12)
+    // ======= PÁGINA 1: PORTADA Y RESUMEN EJECUTIVO =======
+    let y = drawPageHeader(doc, pageWidth, true)
+
+    // Información del reporte
+    y += 5
+    doc.setFontSize(PDF_CONFIG.fontSize.subtitle)
     doc.setFont(undefined, 'bold')
-    doc.text('Resumen', 20, y)
+    doc.setTextColor(...PDF_CONFIG.colors.primary)
+    doc.text(datosReporte.titulo.toUpperCase(), pageWidth / 2, y, { align: 'center' })
+
+    y += 10
+    doc.setFontSize(PDF_CONFIG.fontSize.normal)
     doc.setFont(undefined, 'normal')
+    doc.setTextColor(...PDF_CONFIG.colors.gray)
+    doc.text(`Período: ${datosReporte.periodo}`, pageWidth / 2, y, { align: 'center' })
+
+    y += 15
+
+    // ======= RESUMEN EJECUTIVO =======
+    y = drawSectionTitle(doc, 'Resumen Ejecutivo', y, pageWidth)
     y += 8
+
+    // Dibujar métricas según tipo de reporte
+    const metricBoxWidth = 52
+    const metricBoxHeight = 22
+    const metricGap = 8
 
     switch (datosReporte.tipo) {
       case 'ingresos_mensuales':
-        doc.setFontSize(10)
-        doc.text(`Total Ingresos: ${formatMonto(datosReporte.resumen.totalIngresos)}`, 20, y)
-        y += 6
-        doc.text(`Cantidad de Facturas: ${datosReporte.resumen.cantidadFacturas}`, 20, y)
-        y += 6
-        doc.text(`Promedio por Factura: ${formatMonto(datosReporte.resumen.promedioFactura)}`, 20, y)
-        y += 10
+        drawMetricBox(
+          doc,
+          PDF_CONFIG.margin.left,
+          y,
+          metricBoxWidth,
+          metricBoxHeight,
+          'Total Ingresos',
+          formatMonto(datosReporte.resumen.totalIngresos),
+          PDF_CONFIG.colors.success
+        )
+        drawMetricBox(
+          doc,
+          PDF_CONFIG.margin.left + metricBoxWidth + metricGap,
+          y,
+          metricBoxWidth,
+          metricBoxHeight,
+          'Facturas Pagadas',
+          String(datosReporte.resumen.cantidadFacturas),
+          PDF_CONFIG.colors.primary
+        )
+        drawMetricBox(
+          doc,
+          PDF_CONFIG.margin.left + (metricBoxWidth + metricGap) * 2,
+          y,
+          metricBoxWidth,
+          metricBoxHeight,
+          'Promedio Factura',
+          formatMonto(datosReporte.resumen.promedioFactura),
+          PDF_CONFIG.colors.primary
+        )
+        y += metricBoxHeight + 10
         break
 
       case 'ingresos_anuales':
-        doc.setFontSize(10)
-        doc.text(`Total Anual: ${formatMonto(datosReporte.resumen.totalAnual)}`, 20, y)
-        y += 6
-        doc.text(`Promedio Mensual: ${formatMonto(datosReporte.resumen.promedioMensual)}`, 20, y)
-        y += 6
-        doc.text(`Total Facturas: ${datosReporte.resumen.cantidadTotal}`, 20, y)
-        y += 10
+        drawMetricBox(
+          doc,
+          PDF_CONFIG.margin.left,
+          y,
+          metricBoxWidth,
+          metricBoxHeight,
+          'Total Anual',
+          formatMonto(datosReporte.resumen.totalAnual),
+          PDF_CONFIG.colors.success
+        )
+        drawMetricBox(
+          doc,
+          PDF_CONFIG.margin.left + metricBoxWidth + metricGap,
+          y,
+          metricBoxWidth,
+          metricBoxHeight,
+          'Promedio Mensual',
+          formatMonto(datosReporte.resumen.promedioMensual),
+          PDF_CONFIG.colors.primary
+        )
+        drawMetricBox(
+          doc,
+          PDF_CONFIG.margin.left + (metricBoxWidth + metricGap) * 2,
+          y,
+          metricBoxWidth,
+          metricBoxHeight,
+          'Total Facturas',
+          String(datosReporte.resumen.cantidadTotal),
+          PDF_CONFIG.colors.primary
+        )
+        y += metricBoxHeight + 10
         break
 
       case 'facturas_estado':
-        doc.setFontSize(10)
-        doc.text(`Pagadas: ${datosReporte.resumen.cantidadPagada} (${formatMonto(datosReporte.resumen.totalPagado)})`, 20, y)
-        y += 6
-        doc.text(`Pendientes: ${datosReporte.resumen.cantidadPendiente} (${formatMonto(datosReporte.resumen.totalPendiente)})`, 20, y)
-        y += 6
-        doc.text(`Vencidas: ${datosReporte.resumen.cantidadVencida} (${formatMonto(datosReporte.resumen.totalVencido)})`, 20, y)
-        y += 10
+        drawMetricBox(
+          doc,
+          PDF_CONFIG.margin.left,
+          y,
+          metricBoxWidth,
+          metricBoxHeight,
+          'Pagadas',
+          `${datosReporte.resumen.cantidadPagada}\n${formatMonto(datosReporte.resumen.totalPagado)}`,
+          PDF_CONFIG.colors.success
+        )
+        drawMetricBox(
+          doc,
+          PDF_CONFIG.margin.left + metricBoxWidth + metricGap,
+          y,
+          metricBoxWidth,
+          metricBoxHeight,
+          'Pendientes',
+          `${datosReporte.resumen.cantidadPendiente}\n${formatMonto(datosReporte.resumen.totalPendiente)}`,
+          PDF_CONFIG.colors.warning
+        )
+        drawMetricBox(
+          doc,
+          PDF_CONFIG.margin.left + (metricBoxWidth + metricGap) * 2,
+          y,
+          metricBoxWidth,
+          metricBoxHeight,
+          'Vencidas',
+          `${datosReporte.resumen.cantidadVencida}\n${formatMonto(datosReporte.resumen.totalVencido)}`,
+          PDF_CONFIG.colors.danger
+        )
+        y += metricBoxHeight + 10
         break
 
       case 'clientes_morosos':
-        doc.setFontSize(10)
-        doc.text(`Clientes con Deuda: ${datosReporte.resumen.cantidadClientes}`, 20, y)
-        y += 6
-        doc.text(`Total Adeudado: ${formatMonto(datosReporte.resumen.totalAdeudado)}`, 20, y)
-        y += 6
-        doc.text(`Facturas Vencidas: ${datosReporte.resumen.totalFacturas}`, 20, y)
-        y += 10
+        drawMetricBox(
+          doc,
+          PDF_CONFIG.margin.left,
+          y,
+          metricBoxWidth,
+          metricBoxHeight,
+          'Clientes Morosos',
+          String(datosReporte.resumen.cantidadClientes),
+          PDF_CONFIG.colors.danger
+        )
+        drawMetricBox(
+          doc,
+          PDF_CONFIG.margin.left + metricBoxWidth + metricGap,
+          y,
+          metricBoxWidth,
+          metricBoxHeight,
+          'Total Adeudado',
+          formatMonto(datosReporte.resumen.totalAdeudado),
+          PDF_CONFIG.colors.danger
+        )
+        drawMetricBox(
+          doc,
+          PDF_CONFIG.margin.left + (metricBoxWidth + metricGap) * 2,
+          y,
+          metricBoxWidth,
+          metricBoxHeight,
+          'Facturas Vencidas',
+          String(datosReporte.resumen.totalFacturas),
+          PDF_CONFIG.colors.warning
+        )
+        y += metricBoxHeight + 10
         break
 
       case 'consumo_agua':
-        doc.setFontSize(10)
-        doc.text(`Consumo Total: ${datosReporte.resumen.totalConsumo.toFixed(2)} m³`, 20, y)
-        y += 6
-        doc.text(`Promedio: ${datosReporte.resumen.promedioConsumo.toFixed(2)} m³`, 20, y)
-        y += 6
-        doc.text(`Máximo: ${datosReporte.resumen.consumoMaximo} m³`, 20, y)
-        y += 6
-        doc.text(`Mínimo: ${datosReporte.resumen.consumoMinimo} m³`, 20, y)
-        y += 10
+        drawMetricBox(
+          doc,
+          PDF_CONFIG.margin.left,
+          y,
+          38,
+          metricBoxHeight,
+          'Consumo Total',
+          `${datosReporte.resumen.totalConsumo.toFixed(2)} m³`,
+          PDF_CONFIG.colors.primary
+        )
+        drawMetricBox(
+          doc,
+          PDF_CONFIG.margin.left + 38 + metricGap,
+          y,
+          38,
+          metricBoxHeight,
+          'Promedio',
+          `${datosReporte.resumen.promedioConsumo.toFixed(2)} m³`,
+          PDF_CONFIG.colors.primary
+        )
+        drawMetricBox(
+          doc,
+          PDF_CONFIG.margin.left + (38 + metricGap) * 2,
+          y,
+          38,
+          metricBoxHeight,
+          'Máximo',
+          `${datosReporte.resumen.consumoMaximo} m³`,
+          PDF_CONFIG.colors.warning
+        )
+        drawMetricBox(
+          doc,
+          PDF_CONFIG.margin.left + (38 + metricGap) * 3,
+          y,
+          38,
+          metricBoxHeight,
+          'Mínimo',
+          `${datosReporte.resumen.consumoMinimo} m³`,
+          PDF_CONFIG.colors.success
+        )
+        y += metricBoxHeight + 10
         break
 
       case 'caja_diaria':
-        doc.setFontSize(10)
-        doc.text(`Total Ingresos: ${formatMonto(datosReporte.resumen.totalIngresos)}`, 20, y)
-        y += 6
-        doc.text(`Total Gastos: ${formatMonto(datosReporte.resumen.totalGastos)}`, 20, y)
-        y += 6
-        doc.setFont(undefined, 'bold')
-        doc.text(`Balance: ${formatMonto(datosReporte.resumen.balance)}`, 20, y)
-        doc.setFont(undefined, 'normal')
-        y += 10
+        drawMetricBox(
+          doc,
+          PDF_CONFIG.margin.left,
+          y,
+          metricBoxWidth,
+          metricBoxHeight,
+          'Total Ingresos',
+          formatMonto(datosReporte.resumen.totalIngresos),
+          PDF_CONFIG.colors.success
+        )
+        drawMetricBox(
+          doc,
+          PDF_CONFIG.margin.left + metricBoxWidth + metricGap,
+          y,
+          metricBoxWidth,
+          metricBoxHeight,
+          'Total Gastos',
+          formatMonto(datosReporte.resumen.totalGastos),
+          PDF_CONFIG.colors.danger
+        )
+        drawMetricBox(
+          doc,
+          PDF_CONFIG.margin.left + (metricBoxWidth + metricGap) * 2,
+          y,
+          metricBoxWidth,
+          metricBoxHeight,
+          'Balance',
+          formatMonto(datosReporte.resumen.balance),
+          datosReporte.resumen.balance >= 0 ? PDF_CONFIG.colors.success : PDF_CONFIG.colors.danger
+        )
+        y += metricBoxHeight + 10
         break
 
       case 'lecturas_periodo':
-        doc.setFontSize(10)
-        doc.text(`Total Lecturas: ${datosReporte.resumen.totalLecturas}`, 20, y)
-        y += 10
+        drawMetricBox(
+          doc,
+          PDF_CONFIG.margin.left,
+          y,
+          metricBoxWidth,
+          metricBoxHeight,
+          'Total Lecturas',
+          String(datosReporte.resumen.totalLecturas),
+          PDF_CONFIG.colors.primary
+        )
+        y += metricBoxHeight + 10
         break
     }
 
-    // Datos detallados (primeras líneas)
-    doc.setFontSize(12)
-    doc.setFont(undefined, 'bold')
-    doc.text('Detalle', 20, y)
-    doc.setFont(undefined, 'normal')
+    // ======= SECCIÓN DE DATOS DETALLADOS =======
+    y += 5
+    y = drawSectionTitle(doc, 'Análisis Detallado', y, pageWidth)
     y += 8
 
-    doc.setFontSize(9)
-    const maxLineas = 20
-    let contador = 0
-
-    if (Array.isArray(datosReporte.datos)) {
-      datosReporte.datos.slice(0, maxLineas).forEach(item => {
-        if (y > 270) {
-          doc.addPage()
-          y = 20
+    // Generar tablas según tipo de reporte
+    switch (datosReporte.tipo) {
+      case 'ingresos_mensuales':
+        if (datosReporte.datos && datosReporte.datos.length > 0) {
+          y = drawTable(
+            doc,
+            ['Cliente', 'N° Medidor', 'Monto', 'Fecha Pago'],
+            datosReporte.datos.map(f => [
+              f.usuarios?.nombre_completo || 'N/A',
+              f.usuarios?.numero_medidor || 'N/A',
+              formatMonto(f.total),
+              formatFechaSolo(f.fecha_pago)
+            ]),
+            y,
+            pageWidth,
+            pageHeight,
+            addNewPage
+          )
         }
+        break
 
-        let linea = ''
-        switch (datosReporte.tipo) {
-          case 'ingresos_mensuales':
-            linea = `${item.usuarios?.nombre_completo} - ${formatMonto(item.total)} (${formatFechaSolo(item.fecha_pago)})`
-            break
-          case 'ingresos_anuales':
-            linea = `${item.nombre}: ${formatMonto(item.ingresos)} (${item.cantidad} facturas)`
-            break
-          case 'consumo_agua':
-            linea = `${item.usuarios?.nombre_completo} - ${item.consumo_m3} m³`
-            break
-          case 'caja_diaria':
-            linea = `${item.tipo === 'ingreso' ? '+' : '-'} ${formatMonto(item.monto)} - ${item.descripcion}`
-            break
-          case 'lecturas_periodo':
-            linea = `${item.usuarios?.nombre_completo} - ${item.consumo_m3} m³ (${formatFechaSolo(item.fecha_lectura)})`
-            break
+      case 'ingresos_anuales':
+        if (datosReporte.datos && datosReporte.datos.length > 0) {
+          y = drawTable(
+            doc,
+            ['Mes', 'Cantidad Facturas', 'Total Ingresos'],
+            datosReporte.datos.map(m => [
+              m.nombre,
+              String(m.cantidad),
+              formatMonto(m.ingresos)
+            ]),
+            y,
+            pageWidth,
+            pageHeight,
+            addNewPage
+          )
         }
+        break
 
-        if (linea) {
-          doc.text(`• ${linea}`, 25, y)
+      case 'facturas_estado':
+        // Tabla de facturas pagadas
+        if (datosReporte.datos.pagada && datosReporte.datos.pagada.length > 0) {
+          doc.setFontSize(PDF_CONFIG.fontSize.normal)
+          doc.setFont(undefined, 'bold')
+          doc.setTextColor(...PDF_CONFIG.colors.success)
+          doc.text('FACTURAS PAGADAS', PDF_CONFIG.margin.left, y)
+          doc.setTextColor(0, 0, 0)
+          doc.setFont(undefined, 'normal')
+          y += 8
+
+          y = drawTable(
+            doc,
+            ['Cliente', 'Monto', 'Fecha Emisión', 'Fecha Pago'],
+            datosReporte.datos.pagada.slice(0, 15).map(f => [
+              f.usuarios?.nombre_completo || 'N/A',
+              formatMonto(f.total),
+              formatFechaSolo(f.fecha_emision),
+              formatFechaSolo(f.fecha_pago)
+            ]),
+            y,
+            pageWidth,
+            pageHeight,
+            addNewPage
+          )
           y += 5
-          contador++
         }
-      })
-    }
 
-    if (datosReporte.tipo === 'clientes_morosos' && datosReporte.datos) {
-      datosReporte.datos.slice(0, maxLineas).forEach(cliente => {
-        if (y > 270) {
-          doc.addPage()
-          y = 20
-        }
-        doc.text(`• ${cliente.nombre_completo} - ${formatMonto(cliente.totalAdeudado)} (${cliente.facturas.length} facturas)`, 25, y)
-        y += 5
-      })
-    }
-
-    if (datosReporte.tipo === 'facturas_estado') {
-      ['pagada', 'pendiente', 'vencida'].forEach(estado => {
-        if (y > 250) {
-          doc.addPage()
-          y = 20
-        }
-        doc.setFont(undefined, 'bold')
-        doc.text(`${estado.toUpperCase()}:`, 20, y)
-        doc.setFont(undefined, 'normal')
-        y += 6
-
-        datosReporte.datos[estado]?.slice(0, 5).forEach(f => {
-          if (y > 270) {
-            doc.addPage()
-            y = 20
+        // Tabla de facturas pendientes
+        if (datosReporte.datos.pendiente && datosReporte.datos.pendiente.length > 0) {
+          if (y > pageHeight - 80) {
+            y = addNewPage()
           }
-          doc.text(`  • ${f.usuarios?.nombre_completo} - ${formatMonto(f.total)}`, 25, y)
+
+          doc.setFontSize(PDF_CONFIG.fontSize.normal)
+          doc.setFont(undefined, 'bold')
+          doc.setTextColor(...PDF_CONFIG.colors.warning)
+          doc.text('FACTURAS PENDIENTES', PDF_CONFIG.margin.left, y)
+          doc.setTextColor(0, 0, 0)
+          doc.setFont(undefined, 'normal')
+          y += 8
+
+          y = drawTable(
+            doc,
+            ['Cliente', 'Monto', 'Fecha Emisión', 'Vencimiento'],
+            datosReporte.datos.pendiente.slice(0, 15).map(f => [
+              f.usuarios?.nombre_completo || 'N/A',
+              formatMonto(f.total),
+              formatFechaSolo(f.fecha_emision),
+              formatFechaSolo(f.fecha_vencimiento)
+            ]),
+            y,
+            pageWidth,
+            pageHeight,
+            addNewPage
+          )
           y += 5
-        })
-        y += 3
-      })
+        }
+
+        // Tabla de facturas vencidas
+        if (datosReporte.datos.vencida && datosReporte.datos.vencida.length > 0) {
+          if (y > pageHeight - 80) {
+            y = addNewPage()
+          }
+
+          doc.setFontSize(PDF_CONFIG.fontSize.normal)
+          doc.setFont(undefined, 'bold')
+          doc.setTextColor(...PDF_CONFIG.colors.danger)
+          doc.text('FACTURAS VENCIDAS', PDF_CONFIG.margin.left, y)
+          doc.setTextColor(0, 0, 0)
+          doc.setFont(undefined, 'normal')
+          y += 8
+
+          y = drawTable(
+            doc,
+            ['Cliente', 'Monto', 'Fecha Vencimiento', 'Días Vencidos'],
+            datosReporte.datos.vencida.slice(0, 15).map(f => {
+              const diasVencidos = Math.floor(
+                (new Date() - new Date(f.fecha_vencimiento)) / (1000 * 60 * 60 * 24)
+              )
+              return [
+                f.usuarios?.nombre_completo || 'N/A',
+                formatMonto(f.total),
+                formatFechaSolo(f.fecha_vencimiento),
+                `${diasVencidos} días`
+              ]
+            }),
+            y,
+            pageWidth,
+            pageHeight,
+            addNewPage
+          )
+        }
+        break
+
+      case 'clientes_morosos':
+        if (datosReporte.datos && datosReporte.datos.length > 0) {
+          y = drawTable(
+            doc,
+            ['Cliente', 'Teléfono', 'Facturas Vencidas', 'Total Adeudado'],
+            datosReporte.datos.map(c => [
+              c.nombre_completo || 'N/A',
+              c.telefono || 'N/A',
+              String(c.facturas.length),
+              formatMonto(c.totalAdeudado)
+            ]),
+            y,
+            pageWidth,
+            pageHeight,
+            addNewPage
+          )
+        }
+        break
+
+      case 'consumo_agua':
+        if (datosReporte.datos && datosReporte.datos.length > 0) {
+          y = drawTable(
+            doc,
+            ['Cliente', 'N° Medidor', 'Consumo (m³)', 'Fecha Lectura'],
+            datosReporte.datos.map(l => [
+              l.usuarios?.nombre_completo || 'N/A',
+              l.usuarios?.numero_medidor || 'N/A',
+              String(l.consumo_m3),
+              formatFechaSolo(l.fecha_lectura)
+            ]),
+            y,
+            pageWidth,
+            pageHeight,
+            addNewPage
+          )
+        }
+        break
+
+      case 'caja_diaria':
+        if (datosReporte.datos && datosReporte.datos.length > 0) {
+          y = drawTable(
+            doc,
+            ['Fecha', 'Tipo', 'Categoría', 'Descripción', 'Monto'],
+            datosReporte.datos.map(t => [
+              formatFechaSolo(t.created_at),
+              t.tipo === 'ingreso' ? 'Ingreso' : 'Gasto',
+              t.categoria?.nombre || 'N/A',
+              t.descripcion || 'N/A',
+              formatMonto(t.monto)
+            ]),
+            y,
+            pageWidth,
+            pageHeight,
+            addNewPage
+          )
+        }
+        break
+
+      case 'lecturas_periodo':
+        if (datosReporte.datos && datosReporte.datos.length > 0) {
+          y = drawTable(
+            doc,
+            ['Cliente', 'N° Medidor', 'Lectura Anterior', 'Lectura Actual', 'Consumo (m³)', 'Fecha'],
+            datosReporte.datos.map(l => [
+              l.usuarios?.nombre_completo || 'N/A',
+              l.usuarios?.numero_medidor || 'N/A',
+              String(l.lectura_anterior),
+              String(l.lectura_actual),
+              String(l.consumo_m3),
+              formatFechaSolo(l.fecha_lectura)
+            ]),
+            y,
+            pageWidth,
+            pageHeight,
+            addNewPage
+          )
+        }
+        break
     }
 
-    // Footer
-    const pageCount = doc.internal.getNumberOfPages()
-    for (let i = 1; i <= pageCount; i++) {
+    // ======= AGREGAR FOOTERS A TODAS LAS PÁGINAS =======
+    const totalPages = doc.internal.getNumberOfPages()
+    for (let i = 1; i <= totalPages; i++) {
       doc.setPage(i)
-      doc.setFontSize(8)
-      doc.text(
-        `Generado: ${new Date().toLocaleString('es-PY')} | Página ${i} de ${pageCount}`,
-        pageWidth / 2,
-        290,
-        { align: 'center' }
-      )
+      drawPageFooter(doc, i, totalPages, pageWidth, pageHeight)
     }
 
-    // Descargar
+    // ======= DESCARGAR PDF =======
     const nombreArchivo = `reporte_${datosReporte.tipo}_${new Date().getTime()}.pdf`
     doc.save(nombreArchivo)
   }
