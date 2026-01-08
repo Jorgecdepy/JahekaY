@@ -4,6 +4,7 @@ import Clientes from './Clientes'
 import Lecturas from './Lecturas'
 import Facturas from './Facturas'
 import Tarifas from './Tarifas'
+import CajaDiaria from './CajaDiaria'
 import './Dashboard.css'
 
 function Dashboard() {
@@ -201,6 +202,19 @@ function Dashboard() {
                     <p>Gestionar precios y rangos</p>
                   </div>
                 </button>
+
+                <button className="action-card" onClick={() => setActiveSection('caja')}>
+                  <div className="action-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                    </svg>
+                  </div>
+                  <div className="action-text">
+                    <strong>Caja Diaria</strong>
+                    <p>Gestionar ingresos y gastos</p>
+                  </div>
+                </button>
               </div>
             </div>
           </div>
@@ -213,6 +227,8 @@ function Dashboard() {
         return <Facturas />
       case 'tarifas':
         return <Tarifas />
+      case 'caja':
+        return <CajaDiaria />
       default:
         return <div className="dashboard-content"><h2>Panel de Control</h2></div>
     }
@@ -286,6 +302,18 @@ function Dashboard() {
               </svg>
             </span>
             Facturas
+          </button>
+          <button
+            className={activeSection === 'caja' ? 'nav-item active' : 'nav-item'}
+            onClick={() => setActiveSection('caja')}
+          >
+            <span className="nav-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+              </svg>
+            </span>
+            Caja Diaria
           </button>
           <button
             className={activeSection === 'tarifas' ? 'nav-item active' : 'nav-item'}

@@ -1,0 +1,217 @@
+/* ================================================================
+   CAJA DIARIA - ESTILOS ESPECÍFICOS
+   ================================================================ */
+
+/* Botones de acción del header */
+.header-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.header-actions button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.header-actions button svg {
+  width: 18px;
+  height: 18px;
+}
+
+.ml-2 {
+  margin-left: 0.5rem;
+}
+
+/* ================================================================
+   RESUMEN DE CAJA - Cards superiores
+   ================================================================ */
+.caja-resumen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.caja-card {
+  background: white;
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  border: 2px solid transparent;
+  transition: all var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.caja-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.caja-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.caja-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.caja-value-lg {
+  font-size: 2rem;
+}
+
+.caja-count {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+
+/* Variantes de colores para las tarjetas */
+.caja-card-neutral {
+  border-color: var(--border-color);
+}
+
+.caja-card-neutral .caja-value {
+  color: var(--text-primary);
+}
+
+.caja-card-success {
+  border-color: var(--success-color);
+  background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+}
+
+.caja-card-success .caja-value {
+  color: var(--success-color);
+}
+
+.caja-card-danger {
+  border-color: var(--danger-color);
+  background: linear-gradient(135deg, #ffffff 0%, #fef2f2 100%);
+}
+
+.caja-card-danger .caja-value {
+  color: var(--danger-color);
+}
+
+.caja-card-primary {
+  border-color: var(--primary-color);
+  background: linear-gradient(135deg, #ffffff 0%, #eef2ff 100%);
+}
+
+.caja-card-primary .caja-value {
+  color: var(--primary-color);
+}
+
+/* ================================================================
+   ACCIONES DE CAJA - Botones de arqueo y PDF
+   ================================================================ */
+.caja-actions {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.caja-actions button {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.caja-actions button svg {
+  width: 20px;
+  height: 20px;
+}
+
+.caja-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ================================================================
+   TABLA DE TRANSACCIONES
+   ================================================================ */
+.td-description {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.text-success {
+  color: var(--success-color);
+}
+
+.text-danger {
+  color: var(--danger-color);
+}
+
+/* ================================================================
+   ESTILOS RESPONSIVE
+   ================================================================ */
+@media (max-width: 768px) {
+  .header-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .header-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .caja-resumen {
+    grid-template-columns: 1fr;
+  }
+
+  .caja-value {
+    font-size: 1.5rem;
+  }
+
+  .caja-value-lg {
+    font-size: 1.75rem;
+  }
+
+  .caja-actions {
+    flex-direction: column;
+  }
+
+  .caja-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .td-description {
+    max-width: 150px;
+  }
+}
+
+@media (max-width: 480px) {
+  .caja-card {
+    padding: 1rem;
+  }
+
+  .caja-value {
+    font-size: 1.25rem;
+  }
+
+  .caja-value-lg {
+    font-size: 1.5rem;
+  }
+}
