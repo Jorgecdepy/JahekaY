@@ -5,6 +5,7 @@ import Lecturas from './Lecturas'
 import Facturas from './Facturas'
 import Tarifas from './Tarifas'
 import CajaDiaria from './CajaDiaria'
+import Configuracion from './Configuracion'
 import './Dashboard.css'
 
 function Dashboard() {
@@ -229,6 +230,8 @@ function Dashboard() {
         return <Tarifas />
       case 'caja':
         return <CajaDiaria />
+      case 'configuracion':
+        return <Configuracion />
       default:
         return <div className="dashboard-content"><h2>Panel de Control</h2></div>
     }
@@ -326,6 +329,18 @@ function Dashboard() {
               </svg>
             </span>
             Tarifas
+          </button>
+          <button
+            className={activeSection === 'configuracion' ? 'nav-item active' : 'nav-item'}
+            onClick={() => setActiveSection('configuracion')}
+          >
+            <span className="nav-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M12 1v6m0 6v6m5.66-13.66l-4.24 4.24m-2.83 2.83l-4.24 4.24m16.97-2.83l-4.24-4.24m-2.83-2.83l-4.24-4.24"></path>
+              </svg>
+            </span>
+            Configuración
           </button>
         </nav>
 
