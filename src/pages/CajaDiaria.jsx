@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../services/supabase'
 import Modal from '../components/Modal'
 import FormularioTransaccion from '../components/FormularioTransaccion'
-import jsPDF from 'jspdf'
+import { jsPDF } from 'jspdf'
 import './CajaDiaria.css'
 
 function CajaDiaria() {
