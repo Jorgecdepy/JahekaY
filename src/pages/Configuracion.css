@@ -1,0 +1,266 @@
+/* ================================================================
+   CONFIGURACIÓN - ESTILOS ESPECÍFICOS
+   ================================================================ */
+
+/* Alertas de mensajes */
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+  animation: slideDown 0.3s ease-out;
+}
+
+.alert svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.alert-success {
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  color: #166534;
+}
+
+.alert-error {
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  color: #991b1b;
+}
+
+.alert-warning {
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  color: #92400e;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ================================================================
+   SECCIONES DE CONFIGURACIÓN
+   ================================================================ */
+.config-section {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+}
+
+.config-section-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.config-section-header h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.config-section-header p {
+  color: var(--text-secondary);
+  font-size: 0.9375rem;
+}
+
+/* ================================================================
+   GRID DE CONFIGURACIÓN
+   ================================================================ */
+.config-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.config-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* ================================================================
+   LABELS Y INPUTS
+   ================================================================ */
+.config-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  cursor: pointer;
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--border-color);
+  transition: all var(--transition-fast);
+  background: white;
+}
+
+.config-label:hover {
+  border-color: var(--primary-color);
+  background: #f8f9ff;
+}
+
+.config-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--primary-color);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.config-checkbox-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.config-checkbox-label strong {
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.config-checkbox-label small {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.config-label-simple {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.9375rem;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.config-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  transition: all var(--transition-fast);
+  background: white;
+  color: var(--text-primary);
+}
+
+.config-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.config-input:disabled {
+  background: #f3f4f6;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.config-hint {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+  margin-top: 0.375rem;
+  font-style: italic;
+}
+
+/* ================================================================
+   ACCIONES DE CONFIGURACIÓN
+   ================================================================ */
+.config-actions {
+  display: flex;
+  gap: 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+  flex-wrap: wrap;
+}
+
+.config-actions button {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.config-actions button svg {
+  width: 20px;
+  height: 20px;
+}
+
+.config-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ================================================================
+   TABLA DE HISTORIAL
+   ================================================================ */
+.text-success {
+  color: var(--success-color);
+  font-weight: 600;
+}
+
+.text-danger {
+  color: var(--danger-color);
+  font-weight: 600;
+}
+
+/* Badge adicionales para historial */
+.badge-info {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+@media (max-width: 768px) {
+  .config-section {
+    padding: 1.5rem;
+  }
+
+  .config-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .config-actions {
+    flex-direction: column;
+  }
+
+  .config-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .config-section {
+    padding: 1rem;
+  }
+
+  .config-section-header h3 {
+    font-size: 1.25rem;
+  }
+
+  .config-label {
+    padding: 0.75rem;
+  }
+}
