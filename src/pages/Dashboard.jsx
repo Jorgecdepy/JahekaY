@@ -23,28 +23,24 @@ function Dashboard() {
   }, [activeSection])
 
   const cargarEstadisticas = async () => {
-    // Total de clientes
     const { count: clientesCount } = await supabase
       .from('usuarios')
       .select('*', { count: 'exact', head: true })
 
-    // Facturas pendientes
     const { count: facturasPendientesCount } = await supabase
       .from('facturas')
       .select('*', { count: 'exact', head: true })
       .eq('estado', 'pendiente')
 
-    // Lecturas del mes actual
     const mesActual = new Date().getMonth() + 1
     const anioActual = new Date().getFullYear()
-    
+
     const { count: lecturasDelMesCount } = await supabase
       .from('lecturas')
       .select('*', { count: 'exact', head: true })
       .eq('mes', mesActual)
       .eq('anio', anioActual)
 
-    // Ingresos del mes (facturas pagadas)
     const { data: facturasPagadas } = await supabase
       .from('facturas')
       .select('total')
@@ -76,69 +72,133 @@ function Dashboard() {
   }
 
   const renderContent = () => {
-    switch(activeSection) {
+    switch (activeSection) {
       case 'dashboard':
         return (
-          <div className="dashboard-content">
-            <div className="dashboard-header">
-              <h2>Panel de Control</h2>
-              <p className="dashboard-subtitle">Resumen general del sistema</p>
-            </div>
-
-            <div className="dashboard-cards">
-              <div className="card card-clientes" onClick={() => setActiveSection('clientes')}>
-                <div className="card-icon">👥</div>
-                <h3>Clientes</h3>
-                <p className="card-number">{stats.totalClientes}</p>
-                <p className="card-footer">Total registrados</p>
-              </div>
-              
-              <div className="card card-facturas" onClick={() => setActiveSection('facturas')}>
-                <div className="card-icon">📄</div>
-                <h3>Facturas Pendientes</h3>
-                <p className="card-number">{stats.facturasPendientes}</p>
-                <p className="card-footer">Por cobrar</p>
-              </div>
-              
-              <div className="card card-lecturas" onClick={() => setActiveSection('lecturas')}>
-                <div className="card-icon">📏</div>
-                <h3>Lecturas del Mes</h3>
-                <p className="card-number">{stats.lecturasDelMes}</p>
-                <p className="card-footer">Registradas este mes</p>
-              </div>
-              
-              <div className="card card-ingresos">
-                <div className="card-icon">💰</div>
-                <h3>Ingresos del Mes</h3>
-                <p className="card-number card-money">{formatMonto(stats.ingresosDelMes)}</p>
-                <p className="card-footer">Facturas pagadas</p>
+          <div className="dashboard-content animate-fade-in">
+            <div className="page-header">
+              <div>
+                <h2>Panel de Control</h2>
+                <p className="page-subtitle">Resumen general del sistema</p>
               </div>
             </div>
 
-            <div className="dashboard-actions">
-              <h3>Acciones Rápidas</h3>
-              <div className="action-buttons">
-                <button className="action-btn" onClick={() => setActiveSection('clientes')}>
-                  <span className="action-icon">➕</span>
-                  <div>
+            <div className="stats-grid">
+              <div className="stat-card stat-primary" onClick={() => setActiveSection('clientes')}>
+                <div className="stat-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                  </svg>
+                </div>
+                <div className="stat-content">
+                  <span className="stat-label">Clientes</span>
+                  <span className="stat-value">{stats.totalClientes}</span>
+                  <span className="stat-description">Total registrados</span>
+                </div>
+              </div>
+
+              <div className="stat-card stat-warning" onClick={() => setActiveSection('facturas')}>
+                <div className="stat-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                  </svg>
+                </div>
+                <div className="stat-content">
+                  <span className="stat-label">Facturas Pendientes</span>
+                  <span className="stat-value">{stats.facturasPendientes}</span>
+                  <span className="stat-description">Por cobrar</span>
+                </div>
+              </div>
+
+              <div className="stat-card stat-success" onClick={() => setActiveSection('lecturas')}>
+                <div className="stat-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+                  </svg>
+                </div>
+                <div className="stat-content">
+                  <span className="stat-label">Lecturas del Mes</span>
+                  <span className="stat-value">{stats.lecturasDelMes}</span>
+                  <span className="stat-description">Registradas este mes</span>
+                </div>
+              </div>
+
+              <div className="stat-card stat-danger">
+                <div className="stat-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="12" y1="1" x2="12" y2="23"></line>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                  </svg>
+                </div>
+                <div className="stat-content">
+                  <span className="stat-label">Ingresos del Mes</span>
+                  <span className="stat-value stat-value-money">{formatMonto(stats.ingresosDelMes)}</span>
+                  <span className="stat-description">Facturas pagadas</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="quick-actions">
+              <h3>Acciones Rapidas</h3>
+              <div className="actions-grid">
+                <button className="action-card" onClick={() => setActiveSection('clientes')}>
+                  <div className="action-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="8.5" cy="7" r="4"></circle>
+                      <line x1="20" y1="8" x2="20" y2="14"></line>
+                      <line x1="23" y1="11" x2="17" y2="11"></line>
+                    </svg>
+                  </div>
+                  <div className="action-text">
                     <strong>Nuevo Cliente</strong>
                     <p>Registrar un nuevo cliente</p>
                   </div>
                 </button>
-                
-                <button className="action-btn" onClick={() => setActiveSection('lecturas')}>
-                  <span className="action-icon">📏</span>
-                  <div>
+
+                <button className="action-card" onClick={() => setActiveSection('lecturas')}>
+                  <div className="action-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+                    </svg>
+                  </div>
+                  <div className="action-text">
                     <strong>Nueva Lectura</strong>
                     <p>Registrar lectura de medidor</p>
                   </div>
                 </button>
-                
-                <button className="action-btn" onClick={() => setActiveSection('facturas')}>
-                  <span className="action-icon">📄</span>
-                  <div>
+
+                <button className="action-card" onClick={() => setActiveSection('facturas')}>
+                  <div className="action-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                      <line x1="12" y1="18" x2="12" y2="12"></line>
+                      <line x1="9" y1="15" x2="15" y2="15"></line>
+                    </svg>
+                  </div>
+                  <div className="action-text">
                     <strong>Generar Factura</strong>
                     <p>Crear factura de consumo</p>
+                  </div>
+                </button>
+
+                <button className="action-card" onClick={() => setActiveSection('tarifas')}>
+                  <div className="action-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                  </div>
+                  <div className="action-text">
+                    <strong>Configurar Tarifas</strong>
+                    <p>Gestionar precios y rangos</p>
                   </div>
                 </button>
               </div>
@@ -162,46 +222,102 @@ function Dashboard() {
     <div className="dashboard-layout">
       <aside className="sidebar">
         <div className="sidebar-brand">
-          <h1>JahekaY</h1>
-          <p>Sistema de Gestión</p>
+          <div className="brand-logo">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+            </svg>
+          </div>
+          <div>
+            <h1>JahekaY</h1>
+            <p>Sistema de Gestion</p>
+          </div>
         </div>
 
         <nav className="sidebar-nav">
-          <button 
+          <button
             className={activeSection === 'dashboard' ? 'nav-item active' : 'nav-item'}
             onClick={() => setActiveSection('dashboard')}
           >
-            📊 Dashboard
+            <span className="nav-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+              </svg>
+            </span>
+            Dashboard
           </button>
-          <button 
+          <button
             className={activeSection === 'clientes' ? 'nav-item active' : 'nav-item'}
             onClick={() => setActiveSection('clientes')}
           >
-            👥 Clientes
+            <span className="nav-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+            </span>
+            Clientes
           </button>
-          <button 
+          <button
             className={activeSection === 'lecturas' ? 'nav-item active' : 'nav-item'}
             onClick={() => setActiveSection('lecturas')}
           >
-            📏 Lecturas
+            <span className="nav-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+              </svg>
+            </span>
+            Lecturas
           </button>
-          <button 
+          <button
             className={activeSection === 'facturas' ? 'nav-item active' : 'nav-item'}
             onClick={() => setActiveSection('facturas')}
           >
-            📄 Facturas
+            <span className="nav-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
+            </span>
+            Facturas
           </button>
-          <button 
+          <button
             className={activeSection === 'tarifas' ? 'nav-item active' : 'nav-item'}
             onClick={() => setActiveSection('tarifas')}
           >
-            💰 Tarifas
+            <span className="nav-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="1" x2="12" y2="23"></line>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+              </svg>
+            </span>
+            Tarifas
           </button>
         </nav>
 
         <div className="sidebar-footer">
           <button onClick={handleLogout} disabled={loading} className="logout-btn">
-            {loading ? 'Saliendo...' : '🚪 Cerrar Sesión'}
+            {loading ? (
+              <>
+                <span className="spinner"></span>
+                Saliendo...
+              </>
+            ) : (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                  <polyline points="16 17 21 12 16 7"></polyline>
+                  <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                Cerrar Sesion
+              </>
+            )}
           </button>
         </div>
       </aside>

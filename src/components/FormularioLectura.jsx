@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { supabase } from '../services/supabase'
 import './FormularioLectura.css'
 
@@ -22,7 +22,6 @@ function FormularioLectura({ onSuccess, onCancel, clientes }) {
       [name]: value
     })
 
-    // Si cambia el cliente, buscar su última lectura
     if (name === 'usuario_id' && value) {
       buscarUltimaLectura(value)
     }
@@ -59,7 +58,7 @@ function FormularioLectura({ onSuccess, onCancel, clientes }) {
       observaciones: formData.observaciones
     }
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('lecturas')
       .insert([lecturaData])
       .select()
@@ -78,7 +77,7 @@ function FormularioLectura({ onSuccess, onCancel, clientes }) {
     : 0
 
   return (
-    <form onSubmit={handleSubmit} className="formulario-lectura">
+    <form onSubmit={handleSubmit} className="form-container">
       <div className="form-group">
         <label>Cliente *</label>
         <select
@@ -98,19 +97,28 @@ function FormularioLectura({ onSuccess, onCancel, clientes }) {
 
       {ultimaLectura !== null && (
         <div className="info-box">
-          <p><strong>Última lectura:</strong> {ultimaLectura} m³</p>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <div>
+            <span className="info-label">Ultima lectura registrada</span>
+            <span className="info-value">{ultimaLectura} m3</span>
+          </div>
         </div>
       )}
 
       <div className="form-row">
         <div className="form-group">
-          <label>Lectura Actual (m³) *</label>
+          <label>Lectura Actual (m3) *</label>
           <input
             type="number"
             name="lectura_actual"
             value={formData.lectura_actual}
             onChange={handleChange}
             min={ultimaLectura || 0}
+            placeholder="Ingrese la lectura"
             required
           />
         </div>
@@ -129,7 +137,13 @@ function FormularioLectura({ onSuccess, onCancel, clientes }) {
 
       {consumoEstimado > 0 && (
         <div className="consumo-box">
-          <p><strong>Consumo estimado:</strong> <span className="consumo-value">{consumoEstimado} m³</span></p>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+          </svg>
+          <div>
+            <span className="consumo-label">Consumo estimado</span>
+            <span className="consumo-value">{consumoEstimado} m3</span>
+          </div>
         </div>
       )}
 
@@ -158,7 +172,7 @@ function FormularioLectura({ onSuccess, onCancel, clientes }) {
         </div>
 
         <div className="form-group">
-          <label>Año *</label>
+          <label>Ano *</label>
           <input
             type="number"
             name="anio"
@@ -178,17 +192,34 @@ function FormularioLectura({ onSuccess, onCancel, clientes }) {
           value={formData.observaciones}
           onChange={handleChange}
           rows="3"
+          placeholder="Notas adicionales..."
         />
       </div>
 
-      {error && <div className="error-message">{error}</div>}
+      {error && (
+        <div className="form-error">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span>{error}</span>
+        </div>
+      )}
 
       <div className="form-actions">
-        <button type="button" onClick={onCancel} className="btn-cancel">
+        <button type="button" onClick={onCancel} className="btn-secondary">
           Cancelar
         </button>
-        <button type="submit" disabled={loading} className="btn-submit">
-          {loading ? 'Guardando...' : 'Guardar Lectura'}
+        <button type="submit" disabled={loading} className="btn-primary">
+          {loading ? (
+            <>
+              <span className="spinner"></span>
+              Guardando...
+            </>
+          ) : (
+            'Guardar Lectura'
+          )}
         </button>
       </div>
     </form>

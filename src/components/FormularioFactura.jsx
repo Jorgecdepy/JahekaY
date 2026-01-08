@@ -31,8 +31,7 @@ function FormularioFactura({ onSuccess, onCancel }) {
 
   const cargarDatos = async () => {
     setLoadingData(true)
-    
-    // Cargar lecturas sin factura
+
     const { data: lecturasData, error: lecturasError } = await supabase
       .from('lecturas')
       .select(`
@@ -46,33 +45,25 @@ function FormularioFactura({ onSuccess, onCancel }) {
       `)
       .order('fecha_lectura', { ascending: false })
 
-    // Filtrar lecturas que no tienen factura
     if (lecturasData) {
       const { data: facturasData } = await supabase
         .from('facturas')
         .select('lectura_id')
-      
+
       const lecturasConFactura = facturasData?.map(f => f.lectura_id) || []
       const lecturasFiltradas = lecturasData.filter(l => !lecturasConFactura.includes(l.id))
       setLecturasSinFactura(lecturasFiltradas)
     }
 
-    // Cargar tarifas activas
     const { data: tarifasData, error: tarifasError } = await supabase
       .from('tarifas')
       .select('*')
       .eq('activo', true)
       .order('rango_desde', { ascending: true })
 
-    if (lecturasError) {
-      console.error('Error:', lecturasError)
-    }
-
-    if (tarifasError) {
-      console.error('Error:', tarifasError)
-    } else {
-      setTarifas(tarifasData || [])
-    }
+    if (lecturasError) console.error('Error:', lecturasError)
+    if (tarifasError) console.error('Error:', tarifasError)
+    else setTarifas(tarifasData || [])
 
     setLoadingData(false)
   }
@@ -83,13 +74,8 @@ function FormularioFactura({ onSuccess, onCancel }) {
 
     for (const tarifa of tarifas) {
       if (consumoRestante <= 0) break
-
       const rangoMax = tarifa.rango_hasta || Infinity
-      const consumoEnRango = Math.min(
-        consumoRestante,
-        rangoMax - tarifa.rango_desde + 1
-      )
-
+      const consumoEnRango = Math.min(consumoRestante, rangoMax - tarifa.rango_desde + 1)
       montoTotal += consumoEnRango * parseFloat(tarifa.precio_por_m3)
       consumoRestante -= consumoEnRango
     }
@@ -109,7 +95,7 @@ function FormularioFactura({ onSuccess, onCancel }) {
         const consumo = lectura.consumo_m3
         const montoConsumo = calcularMontoConsumo(consumo)
         const cargoFijo = tarifas[0]?.cargo_fijo_mensual || 0
-        
+
         const nuevoCalculo = {
           consumo_m3: consumo,
           monto_consumo: montoConsumo,
@@ -118,19 +104,12 @@ function FormularioFactura({ onSuccess, onCancel }) {
           mora: parseFloat(formData.mora),
           total: montoConsumo + parseFloat(cargoFijo) - parseFloat(formData.descuento) + parseFloat(formData.mora)
         }
-        
+
         setCalculo(nuevoCalculo)
       }
     } else {
       setLecturaSeleccionada(null)
-      setCalculo({
-        consumo_m3: 0,
-        monto_consumo: 0,
-        cargo_fijo: 0,
-        descuento: 0,
-        mora: 0,
-        total: 0
-      })
+      setCalculo({ consumo_m3: 0, monto_consumo: 0, cargo_fijo: 0, descuento: 0, mora: 0, total: 0 })
     }
   }
 
@@ -170,7 +149,7 @@ function FormularioFactura({ onSuccess, onCancel }) {
       fecha_vencimiento: formData.fecha_vencimiento
     }
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('facturas')
       .insert([facturaData])
       .select()
@@ -185,50 +164,52 @@ function FormularioFactura({ onSuccess, onCancel }) {
   }
 
   const getMesNombre = (mes) => {
-    const meses = [
-      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-    ]
+    const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
     return meses[mes - 1]
   }
 
   const formatMonto = (monto) => {
     return new Intl.NumberFormat('es-PY', {
-      style: 'currency',
-      currency: 'PYG',
-      minimumFractionDigits: 0
+      style: 'currency', currency: 'PYG', minimumFractionDigits: 0
     }).format(monto)
   }
 
   if (loadingData) {
-    return <div className="loading-form">Cargando datos...</div>
+    return (
+      <div className="form-loading">
+        <div className="spinner spinner-lg"></div>
+        <p>Cargando datos...</p>
+      </div>
+    )
   }
 
   if (lecturasSinFactura.length === 0) {
     return (
-      <div className="no-lecturas">
-        <p>No hay lecturas sin facturar disponibles.</p>
-        <p>Primero debe registrar lecturas de medidores.</p>
-        <button onClick={onCancel} className="btn-cancel">Cerrar</button>
+      <div className="form-empty">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+        </svg>
+        <p>No hay lecturas sin facturar</p>
+        <span>Primero debe registrar lecturas de medidores</span>
+        <button onClick={onCancel} className="btn-secondary">Cerrar</button>
       </div>
     )
   }
 
   return (
-    <form onSubmit={handleSubmit} className="formulario-factura">
+    <form onSubmit={handleSubmit} className="form-container">
       <div className="form-group">
         <label>Lectura a Facturar *</label>
-        <select
-          name="lectura_id"
-          value={formData.lectura_id}
-          onChange={handleLecturaChange}
-          required
-        >
+        <select name="lectura_id" value={formData.lectura_id} onChange={handleLecturaChange} required>
           <option value="">Seleccione una lectura</option>
           {lecturasSinFactura.map((lectura) => (
             <option key={lectura.id} value={lectura.id}>
-              {lectura.usuarios?.nombre_completo} - {lectura.usuarios?.numero_medidor} - 
-              {getMesNombre(lectura.mes)} {lectura.anio} ({lectura.consumo_m3} m³)
+              {lectura.usuarios?.nombre_completo} - {lectura.usuarios?.numero_medidor} -
+              {getMesNombre(lectura.mes)} {lectura.anio} ({lectura.consumo_m3} m3)
             </option>
           ))}
         </select>
@@ -236,32 +217,32 @@ function FormularioFactura({ onSuccess, onCancel }) {
 
       {lecturaSeleccionada && (
         <>
-          <div className="info-lectura">
-            <h4>Información de la Lectura</h4>
-            <div className="info-grid">
-              <div className="info-item">
-                <span className="info-label">Cliente:</span>
-                <span className="info-value">{lecturaSeleccionada.usuarios?.nombre_completo}</span>
+          <div className="factura-info-box">
+            <h4>Informacion de la Lectura</h4>
+            <div className="factura-info-grid">
+              <div className="factura-info-item">
+                <span className="factura-info-label">Cliente</span>
+                <span className="factura-info-value">{lecturaSeleccionada.usuarios?.nombre_completo}</span>
               </div>
-              <div className="info-item">
-                <span className="info-label">Medidor:</span>
-                <span className="info-value">{lecturaSeleccionada.usuarios?.numero_medidor}</span>
+              <div className="factura-info-item">
+                <span className="factura-info-label">Medidor</span>
+                <span className="factura-info-value">{lecturaSeleccionada.usuarios?.numero_medidor}</span>
               </div>
-              <div className="info-item">
-                <span className="info-label">Periodo:</span>
-                <span className="info-value">{getMesNombre(lecturaSeleccionada.mes)} {lecturaSeleccionada.anio}</span>
+              <div className="factura-info-item">
+                <span className="factura-info-label">Periodo</span>
+                <span className="factura-info-value">{getMesNombre(lecturaSeleccionada.mes)} {lecturaSeleccionada.anio}</span>
               </div>
-              <div className="info-item">
-                <span className="info-label">Consumo:</span>
-                <span className="info-value consumo-highlight">{lecturaSeleccionada.consumo_m3} m³</span>
+              <div className="factura-info-item">
+                <span className="factura-info-label">Consumo</span>
+                <span className="factura-info-value factura-consumo-highlight">{lecturaSeleccionada.consumo_m3} m3</span>
               </div>
             </div>
           </div>
 
-          <div className="calculo-desglose">
+          <div className="factura-desglose">
             <h4>Desglose de Factura</h4>
             <div className="desglose-item">
-              <span>Consumo ({calculo.consumo_m3} m³)</span>
+              <span>Consumo ({calculo.consumo_m3} m3)</span>
               <span>{formatMonto(calculo.monto_consumo)}</span>
             </div>
             <div className="desglose-item">
@@ -269,13 +250,13 @@ function FormularioFactura({ onSuccess, onCancel }) {
               <span>{formatMonto(calculo.cargo_fijo)}</span>
             </div>
             {calculo.descuento > 0 && (
-              <div className="desglose-item descuento">
+              <div className="desglose-item desglose-descuento">
                 <span>Descuento</span>
                 <span>- {formatMonto(calculo.descuento)}</span>
               </div>
             )}
             {calculo.mora > 0 && (
-              <div className="desglose-item mora">
+              <div className="desglose-item desglose-mora">
                 <span>Mora</span>
                 <span>+ {formatMonto(calculo.mora)}</span>
               </div>
@@ -289,61 +270,44 @@ function FormularioFactura({ onSuccess, onCancel }) {
           <div className="form-row">
             <div className="form-group">
               <label>Descuento (Gs.)</label>
-              <input
-                type="number"
-                name="descuento"
-                value={formData.descuento}
-                onChange={handleAjustesChange}
-                min="0"
-              />
+              <input type="number" name="descuento" value={formData.descuento} onChange={handleAjustesChange} min="0" />
             </div>
-
             <div className="form-group">
               <label>Mora (Gs.)</label>
-              <input
-                type="number"
-                name="mora"
-                value={formData.mora}
-                onChange={handleAjustesChange}
-                min="0"
-              />
+              <input type="number" name="mora" value={formData.mora} onChange={handleAjustesChange} min="0" />
             </div>
           </div>
 
           <div className="form-row">
             <div className="form-group">
-              <label>Fecha de Emisión *</label>
-              <input
-                type="date"
-                name="fecha_emision"
-                value={formData.fecha_emision}
-                onChange={(e) => setFormData({...formData, fecha_emision: e.target.value})}
-                required
-              />
+              <label>Fecha de Emision *</label>
+              <input type="date" name="fecha_emision" value={formData.fecha_emision}
+                onChange={(e) => setFormData({...formData, fecha_emision: e.target.value})} required />
             </div>
-
             <div className="form-group">
               <label>Fecha de Vencimiento *</label>
-              <input
-                type="date"
-                name="fecha_vencimiento"
-                value={formData.fecha_vencimiento}
-                onChange={(e) => setFormData({...formData, fecha_vencimiento: e.target.value})}
-                required
-              />
+              <input type="date" name="fecha_vencimiento" value={formData.fecha_vencimiento}
+                onChange={(e) => setFormData({...formData, fecha_vencimiento: e.target.value})} required />
             </div>
           </div>
         </>
       )}
 
-      {error && <div className="error-message">{error}</div>}
+      {error && (
+        <div className="form-error">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span>{error}</span>
+        </div>
+      )}
 
       <div className="form-actions">
-        <button type="button" onClick={onCancel} className="btn-cancel">
-          Cancelar
-        </button>
-        <button type="submit" disabled={loading || !lecturaSeleccionada} className="btn-submit">
-          {loading ? 'Generando...' : 'Generar Factura'}
+        <button type="button" onClick={onCancel} className="btn-secondary">Cancelar</button>
+        <button type="submit" disabled={loading || !lecturaSeleccionada} className="btn-primary">
+          {loading ? (<><span className="spinner"></span>Generando...</>) : 'Generar Factura'}
         </button>
       </div>
     </form>
