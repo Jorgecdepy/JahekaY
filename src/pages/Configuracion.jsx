@@ -43,6 +43,16 @@ function Configuracion() {
     notas: ''
   })
 
+  // Estados para gestión de accesos al portal
+  const [isModalAccesoOpen, setIsModalAccesoOpen] = useState(false)
+  const [clienteAcceso, setClienteAcceso] = useState(null)
+  const [savingAcceso, setSavingAcceso] = useState(false)
+  const [formDataAcceso, setFormDataAcceso] = useState({
+    numero_medidor: '',
+    codigo_pin: '',
+    acceso_portal_activo: true
+  })
+
   const [config, setConfig] = useState({
     facturacion_automatica_activa: false,
     facturacion_dia_mes: '1',
@@ -466,6 +476,68 @@ function Configuracion() {
     })
   }
 
+  // Funciones para gestión de accesos al portal
+  const generarPIN = () => {
+    // Generar PIN de 6 dígitos
+    const pin = Math.floor(100000 + Math.random() * 900000).toString()
+    setFormDataAcceso({ ...formDataAcceso, codigo_pin: pin })
+  }
+
+  const abrirModalAcceso = (cliente) => {
+    setClienteAcceso(cliente)
+    setFormDataAcceso({
+      numero_medidor: cliente.numero_medidor || '',
+      codigo_pin: cliente.codigo_pin || '',
+      acceso_portal_activo: cliente.acceso_portal_activo !== false
+    })
+    setIsModalAccesoOpen(true)
+  }
+
+  const handleSubmitAcceso = async (e) => {
+    e.preventDefault()
+    setSavingAcceso(true)
+
+    try {
+      const { error } = await supabase
+        .from('usuarios')
+        .update({
+          numero_medidor: formDataAcceso.numero_medidor,
+          codigo_pin: formDataAcceso.codigo_pin,
+          acceso_portal_activo: formDataAcceso.acceso_portal_activo
+        })
+        .eq('id', clienteAcceso.id)
+
+      if (error) throw error
+
+      setIsModalAccesoOpen(false)
+      mostrarMensaje('Credenciales actualizadas exitosamente', 'success')
+      cargarClientes()
+    } catch (error) {
+      console.error('Error:', error)
+      mostrarMensaje('Error al actualizar credenciales: ' + error.message, 'error')
+    }
+
+    setSavingAcceso(false)
+  }
+
+  const toggleAccesoPortal = async (clienteId, estadoActual) => {
+    const { error } = await supabase
+      .from('usuarios')
+      .update({ acceso_portal_activo: !estadoActual })
+      .eq('id', clienteId)
+
+    if (error) {
+      console.error('Error:', error)
+      mostrarMensaje('Error al actualizar el acceso', 'error')
+    } else {
+      mostrarMensaje(
+        `Acceso al portal ${!estadoActual ? 'activado' : 'desactivado'} exitosamente`,
+        'success'
+      )
+      cargarClientes()
+    }
+  }
+
   const getEstadoBadge = (estado) => {
     switch (estado) {
       case 'completado': return 'badge-success'
@@ -693,6 +765,111 @@ function Configuracion() {
               </svg>
               <p>No hay historial de facturaciones</p>
               <span>Las facturaciones automáticas aparecerán aquí</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Gestión de Accesos al Portal del Cliente */}
+      <div className="config-section">
+        <div className="config-section-header">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h3>Gestión de Accesos al Portal del Cliente</h3>
+              <p>Asigna credenciales para que los clientes accedan al portal web</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Nº Medidor</th>
+                <th>PIN</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {clientes.map((cliente) => (
+                <tr key={cliente.id}>
+                  <td>
+                    <div>
+                      <strong>{cliente.nombre_completo}</strong>
+                      <br />
+                      <small style={{ color: '#666' }}>{cliente.direccion}</small>
+                    </div>
+                  </td>
+                  <td>
+                    {cliente.numero_medidor ? (
+                      <span className="badge badge-info">{cliente.numero_medidor}</span>
+                    ) : (
+                      <span style={{ color: '#999', fontStyle: 'italic' }}>Sin asignar</span>
+                    )}
+                  </td>
+                  <td>
+                    {cliente.codigo_pin ? (
+                      <span style={{ fontFamily: 'monospace', letterSpacing: '2px' }}>
+                        {'•'.repeat(6)}
+                      </span>
+                    ) : (
+                      <span style={{ color: '#999', fontStyle: 'italic' }}>Sin PIN</span>
+                    )}
+                  </td>
+                  <td>
+                    {cliente.acceso_portal_activo !== false ? (
+                      <span className="badge badge-success">Activo</span>
+                    ) : (
+                      <span className="badge badge-danger">Inactivo</span>
+                    )}
+                  </td>
+                  <td>
+                    <div className="table-actions">
+                      <button
+                        className="btn-icon btn-icon-primary"
+                        onClick={() => abrirModalAcceso(cliente)}
+                        title="Configurar acceso"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                      </button>
+                      <button
+                        className={`btn-icon ${cliente.acceso_portal_activo !== false ? 'btn-icon-danger' : 'btn-icon-success'}`}
+                        onClick={() => toggleAccesoPortal(cliente.id, cliente.acceso_portal_activo !== false)}
+                        title={cliente.acceso_portal_activo !== false ? 'Desactivar acceso' : 'Activar acceso'}
+                      >
+                        {cliente.acceso_portal_activo !== false ? (
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                          </svg>
+                        ) : (
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {clientes.length === 0 && (
+            <div className="empty-state">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              <p>No hay clientes registrados</p>
+              <span>Los clientes aparecerán aquí automáticamente</span>
             </div>
           )}
         </div>
@@ -1240,6 +1417,106 @@ function Configuracion() {
                 </>
               ) : (
                 'Guardar Tarifa'
+              )}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Modal para Configurar Acceso al Portal */}
+      <Modal
+        isOpen={isModalAccesoOpen}
+        onClose={() => setIsModalAccesoOpen(false)}
+        title={`Configurar Acceso - ${clienteAcceso?.nombre_completo}`}
+      >
+        <form onSubmit={handleSubmitAcceso} className="form-container">
+          <div className="form-group">
+            <label>Número de Medidor *</label>
+            <input
+              type="text"
+              value={formDataAcceso.numero_medidor}
+              onChange={(e) => setFormDataAcceso({...formDataAcceso, numero_medidor: e.target.value})}
+              placeholder="Ejemplo: 001234"
+              required
+              maxLength="20"
+            />
+            <small className="form-hint">
+              El cliente usará este número para iniciar sesión
+            </small>
+          </div>
+
+          <div className="form-group">
+            <label>Código PIN (6 dígitos) *</label>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <input
+                type="text"
+                value={formDataAcceso.codigo_pin}
+                onChange={(e) => setFormDataAcceso({...formDataAcceso, codigo_pin: e.target.value.replace(/\D/g, '')})}
+                placeholder="123456"
+                required
+                maxLength="6"
+                pattern="\d{6}"
+                style={{ flex: 1 }}
+              />
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={generarPIN}
+                title="Generar PIN aleatorio"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '20px', height: '20px' }}>
+                  <polyline points="23 4 23 10 17 10"></polyline>
+                  <polyline points="1 20 1 14 7 14"></polyline>
+                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+                Generar
+              </button>
+            </div>
+            <small className="form-hint">
+              PIN de 6 dígitos para acceder al portal. Usa el botón "Generar" para crear uno aleatorio.
+            </small>
+          </div>
+
+          <div className="form-group">
+            <label className="config-label">
+              <input
+                type="checkbox"
+                checked={formDataAcceso.acceso_portal_activo}
+                onChange={(e) => setFormDataAcceso({...formDataAcceso, acceso_portal_activo: e.target.checked})}
+                className="config-checkbox"
+              />
+              <span className="config-checkbox-label">
+                <strong>Acceso al portal activo</strong>
+                <small>Permite al cliente iniciar sesión en el portal web</small>
+              </span>
+            </label>
+          </div>
+
+          <div className="alert alert-info" style={{ marginTop: '1rem' }}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+            <div>
+              <strong>URL del Portal:</strong> /portal-cliente/login
+              <br />
+              <strong>Credenciales:</strong> Medidor + PIN de 6 dígitos
+            </div>
+          </div>
+
+          <div className="form-actions">
+            <button type="button" className="btn-secondary" onClick={() => setIsModalAccesoOpen(false)}>
+              Cancelar
+            </button>
+            <button type="submit" className="btn-primary" disabled={savingAcceso}>
+              {savingAcceso ? (
+                <>
+                  <span className="spinner"></span>
+                  Guardando...
+                </>
+              ) : (
+                'Guardar Credenciales'
               )}
             </button>
           </div>
