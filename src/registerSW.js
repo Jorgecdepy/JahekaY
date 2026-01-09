@@ -73,9 +73,13 @@ export function setupOnlineOfflineDetection() {
     if (isOnline) {
       console.log('🌐 Conexión restaurada')
       // Sincronizar datos pendientes si es necesario
-      if ('serviceWorker' in navigator && 'sync' in self.registration) {
+      if ('serviceWorker' in navigator) {
         navigator.serviceWorker.ready.then((registration) => {
-          registration.sync.register('sync-data')
+          if ('sync' in registration) {
+            registration.sync.register('sync-data')
+          }
+        }).catch((error) => {
+          console.warn('⚠️ Error al sincronizar:', error)
         })
       }
     } else {
