@@ -53,6 +53,19 @@ function Configuracion() {
     acceso_portal_activo: true
   })
 
+  // Estados para crear nuevo cliente con acceso
+  const [isModalNuevoClienteOpen, setIsModalNuevoClienteOpen] = useState(false)
+  const [savingNuevoCliente, setSavingNuevoCliente] = useState(false)
+  const [formDataNuevoCliente, setFormDataNuevoCliente] = useState({
+    nombre_completo: '',
+    direccion: '',
+    telefono: '',
+    email: '',
+    numero_medidor: '',
+    codigo_pin: '',
+    acceso_portal_activo: true
+  })
+
   const [config, setConfig] = useState({
     facturacion_automatica_activa: false,
     facturacion_dia_mes: '1',
@@ -538,6 +551,57 @@ function Configuracion() {
     }
   }
 
+  // Funciones para crear nuevo cliente con acceso
+  const generarPINNuevoCliente = () => {
+    const pin = Math.floor(100000 + Math.random() * 900000).toString()
+    setFormDataNuevoCliente({ ...formDataNuevoCliente, codigo_pin: pin })
+  }
+
+  const abrirModalNuevoCliente = () => {
+    setFormDataNuevoCliente({
+      nombre_completo: '',
+      direccion: '',
+      telefono: '',
+      email: '',
+      numero_medidor: '',
+      codigo_pin: '',
+      acceso_portal_activo: true
+    })
+    setIsModalNuevoClienteOpen(true)
+  }
+
+  const handleSubmitNuevoCliente = async (e) => {
+    e.preventDefault()
+    setSavingNuevoCliente(true)
+
+    try {
+      const { data, error } = await supabase
+        .from('usuarios')
+        .insert([{
+          nombre_completo: formDataNuevoCliente.nombre_completo,
+          direccion: formDataNuevoCliente.direccion,
+          telefono: formDataNuevoCliente.telefono,
+          email: formDataNuevoCliente.email,
+          numero_medidor: formDataNuevoCliente.numero_medidor,
+          codigo_pin: formDataNuevoCliente.codigo_pin,
+          acceso_portal_activo: formDataNuevoCliente.acceso_portal_activo,
+          estado_cuenta: 'activo'
+        }])
+        .select()
+
+      if (error) throw error
+
+      setIsModalNuevoClienteOpen(false)
+      mostrarMensaje('Cliente creado exitosamente con acceso al portal', 'success')
+      cargarClientes()
+    } catch (error) {
+      console.error('Error:', error)
+      mostrarMensaje('Error al crear cliente: ' + error.message, 'error')
+    }
+
+    setSavingNuevoCliente(false)
+  }
+
   const getEstadoBadge = (estado) => {
     switch (estado) {
       case 'completado': return 'badge-success'
@@ -778,6 +842,13 @@ function Configuracion() {
               <h3>Gestión de Accesos al Portal del Cliente</h3>
               <p>Asigna credenciales para que los clientes accedan al portal web</p>
             </div>
+            <button className="btn-primary" onClick={abrirModalNuevoCliente}>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Nuevo Cliente
+            </button>
           </div>
         </div>
 
@@ -1517,6 +1588,150 @@ function Configuracion() {
                 </>
               ) : (
                 'Guardar Credenciales'
+              )}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Modal para Crear Nuevo Cliente */}
+      <Modal
+        isOpen={isModalNuevoClienteOpen}
+        onClose={() => setIsModalNuevoClienteOpen(false)}
+        title="Nuevo Cliente con Acceso al Portal"
+      >
+        <form onSubmit={handleSubmitNuevoCliente} className="form-container">
+          <div className="form-group">
+            <label>Nombre Completo *</label>
+            <input
+              type="text"
+              value={formDataNuevoCliente.nombre_completo}
+              onChange={(e) => setFormDataNuevoCliente({...formDataNuevoCliente, nombre_completo: e.target.value})}
+              placeholder="Juan Pérez"
+              required
+            />
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label>Dirección *</label>
+              <input
+                type="text"
+                value={formDataNuevoCliente.direccion}
+                onChange={(e) => setFormDataNuevoCliente({...formDataNuevoCliente, direccion: e.target.value})}
+                placeholder="Calle 1, Barrio San José"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label>Teléfono</label>
+              <input
+                type="tel"
+                value={formDataNuevoCliente.telefono}
+                onChange={(e) => setFormDataNuevoCliente({...formDataNuevoCliente, telefono: e.target.value})}
+                placeholder="0981123456"
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label>Email</label>
+            <input
+              type="email"
+              value={formDataNuevoCliente.email}
+              onChange={(e) => setFormDataNuevoCliente({...formDataNuevoCliente, email: e.target.value})}
+              placeholder="cliente@ejemplo.com"
+            />
+          </div>
+
+          <div className="alert alert-info" style={{ marginTop: '1rem', marginBottom: '1rem' }}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+            <div>
+              <strong>Credenciales para el Portal</strong>
+              <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.875rem' }}>
+                Completa los siguientes campos para que el cliente pueda acceder al portal web
+              </p>
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label>Número de Medidor *</label>
+            <input
+              type="text"
+              value={formDataNuevoCliente.numero_medidor}
+              onChange={(e) => setFormDataNuevoCliente({...formDataNuevoCliente, numero_medidor: e.target.value})}
+              placeholder="Ejemplo: 001234"
+              required
+              maxLength="20"
+            />
+            <small className="form-hint">
+              El cliente usará este número como usuario para iniciar sesión
+            </small>
+          </div>
+
+          <div className="form-group">
+            <label>Código PIN (6 dígitos) *</label>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <input
+                type="text"
+                value={formDataNuevoCliente.codigo_pin}
+                onChange={(e) => setFormDataNuevoCliente({...formDataNuevoCliente, codigo_pin: e.target.value.replace(/\D/g, '')})}
+                placeholder="123456"
+                required
+                maxLength="6"
+                pattern="\d{6}"
+                style={{ flex: 1 }}
+              />
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={generarPINNuevoCliente}
+                title="Generar PIN aleatorio"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '20px', height: '20px' }}>
+                  <polyline points="23 4 23 10 17 10"></polyline>
+                  <polyline points="1 20 1 14 7 14"></polyline>
+                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+                Generar
+              </button>
+            </div>
+            <small className="form-hint">
+              PIN de 6 dígitos. Usa "Generar" para crear uno aleatorio seguro.
+            </small>
+          </div>
+
+          <div className="form-group">
+            <label className="config-label">
+              <input
+                type="checkbox"
+                checked={formDataNuevoCliente.acceso_portal_activo}
+                onChange={(e) => setFormDataNuevoCliente({...formDataNuevoCliente, acceso_portal_activo: e.target.checked})}
+                className="config-checkbox"
+              />
+              <span className="config-checkbox-label">
+                <strong>Acceso al portal activo</strong>
+                <small>Permite al cliente iniciar sesión inmediatamente</small>
+              </span>
+            </label>
+          </div>
+
+          <div className="form-actions">
+            <button type="button" className="btn-secondary" onClick={() => setIsModalNuevoClienteOpen(false)}>
+              Cancelar
+            </button>
+            <button type="submit" className="btn-primary" disabled={savingNuevoCliente}>
+              {savingNuevoCliente ? (
+                <>
+                  <span className="spinner"></span>
+                  Creando...
+                </>
+              ) : (
+                'Crear Cliente'
               )}
             </button>
           </div>
