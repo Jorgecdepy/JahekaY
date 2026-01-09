@@ -501,7 +501,7 @@ function Configuracion() {
     setFormDataAcceso({
       numero_medidor: cliente.numero_medidor || '',
       codigo_pin: cliente.codigo_pin || '',
-      acceso_portal_activo: cliente.acceso_portal_activo !== false
+      acceso_portal_activo: cliente.activo !== false
     })
     setIsModalAccesoOpen(true)
   }
@@ -516,7 +516,7 @@ function Configuracion() {
         .update({
           numero_medidor: formDataAcceso.numero_medidor,
           codigo_pin: formDataAcceso.codigo_pin,
-          acceso_portal_activo: formDataAcceso.acceso_portal_activo
+          activo: formDataAcceso.acceso_portal_activo
         })
         .eq('id', clienteAcceso.id)
 
@@ -536,7 +536,7 @@ function Configuracion() {
   const toggleAccesoPortal = async (clienteId, estadoActual) => {
     const { error } = await supabase
       .from('usuarios')
-      .update({ acceso_portal_activo: !estadoActual })
+      .update({ activo: !estadoActual })
       .eq('id', clienteId)
 
     if (error) {
@@ -584,8 +584,8 @@ function Configuracion() {
           email: formDataNuevoCliente.email,
           numero_medidor: formDataNuevoCliente.numero_medidor,
           codigo_pin: formDataNuevoCliente.codigo_pin,
-          acceso_portal_activo: formDataNuevoCliente.acceso_portal_activo,
-          estado_cuenta: 'activo'
+          activo: formDataNuevoCliente.acceso_portal_activo,
+          notas: 'Cliente creado desde portal de configuración'
         }])
         .select()
 
@@ -890,7 +890,7 @@ function Configuracion() {
                     )}
                   </td>
                   <td>
-                    {cliente.acceso_portal_activo !== false ? (
+                    {cliente.activo !== false ? (
                       <span className="badge badge-success">Activo</span>
                     ) : (
                       <span className="badge badge-danger">Inactivo</span>
@@ -909,11 +909,11 @@ function Configuracion() {
                         </svg>
                       </button>
                       <button
-                        className={`btn-icon ${cliente.acceso_portal_activo !== false ? 'btn-icon-danger' : 'btn-icon-success'}`}
-                        onClick={() => toggleAccesoPortal(cliente.id, cliente.acceso_portal_activo !== false)}
-                        title={cliente.acceso_portal_activo !== false ? 'Desactivar acceso' : 'Activar acceso'}
+                        className={`btn-icon ${cliente.activo !== false ? 'btn-icon-danger' : 'btn-icon-success'}`}
+                        onClick={() => toggleAccesoPortal(cliente.id, cliente.activo !== false)}
+                        title={cliente.activo !== false ? 'Desactivar acceso' : 'Activar acceso'}
                       >
-                        {cliente.acceso_portal_activo !== false ? (
+                        {cliente.activo !== false ? (
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <circle cx="12" cy="12" r="10"></circle>
                             <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
