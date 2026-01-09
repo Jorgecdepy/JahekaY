@@ -7,6 +7,7 @@ import Tarifas from './Tarifas'
 import CajaDiaria from './CajaDiaria'
 import Configuracion from './Configuracion'
 import Reportes from './Reportes'
+import RolesPermisos from './RolesPermisos'
 import './Dashboard.css'
 
 function Dashboard() {
@@ -246,6 +247,8 @@ function Dashboard() {
         return <CajaDiaria />
       case 'reportes':
         return <Reportes />
+      case 'roles':
+        return <RolesPermisos />
       case 'configuracion':
         return <Configuracion />
       default:
@@ -347,6 +350,21 @@ function Dashboard() {
               </svg>
             </span>
             Reportes
+          </button>
+          <button
+            className={activeSection === 'roles' ? 'nav-item active' : 'nav-item'}
+            onClick={() => setActiveSection('roles')}
+          >
+            <span className="nav-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                <circle cx="18" cy="18" r="2"></circle>
+              </svg>
+            </span>
+            Roles y Permisos
           </button>
           <button
             className={activeSection === 'configuracion' ? 'nav-item active' : 'nav-item'}
