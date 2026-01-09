@@ -10,6 +10,9 @@ export const useClienteAuth = () => {
   return context
 }
 
+// Alias para compatibilidad
+export const useCliente = useClienteAuth
+
 export const ClienteAuthProvider = ({ children }) => {
   const [cliente, setCliente] = useState(null)
   const [loading, setLoading] = useState(true)
