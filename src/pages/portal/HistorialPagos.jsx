@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useCliente } from '../../contexts/ClienteAuthContext'
-import { supabase } from '../../config/supabaseClient'
+import { supabase } from '../../services/supabase'
 import jsPDF from 'jspdf'
 import './HistorialPagos.css'
 
