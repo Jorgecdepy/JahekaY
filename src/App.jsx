@@ -4,8 +4,10 @@ import { supabase } from './services/supabase'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import { ClienteAuthProvider, useCliente } from './contexts/ClienteAuthContext'
+import { EmpleadoAuthProvider, useEmpleado } from './contexts/EmpleadoAuthContext'
 import PortalLayout from './layouts/PortalLayout'
 import LoginCliente from './pages/portal/LoginCliente'
+import LoginEmpleado from './pages/LoginEmpleado'
 import DashboardCliente from './pages/portal/DashboardCliente'
 import ReclamosCliente from './pages/portal/ReclamosCliente'
 import EstadoCuenta from './pages/portal/EstadoCuenta'
@@ -29,6 +31,53 @@ function ProtectedPortalRoute({ children }) {
   }
 
   return isAuthenticated ? children : <Navigate to="/portal-cliente/login" />
+}
+
+// Componente protegido para rutas de empleados
+function ProtectedEmpleadoRoute({ children, requiredModule, requiredPermiso }) {
+  const { empleado, loading, tienePermiso, tieneAccesoModulo } = useEmpleado()
+
+  if (loading) {
+    return (
+      <div className="loading">
+        <div className="loading-logo">JahekaY</div>
+        <div className="spinner spinner-lg"></div>
+        <p className="loading-text">Cargando permisos...</p>
+      </div>
+    )
+  }
+
+  if (!empleado) {
+    return <Navigate to="/empleado/login" />
+  }
+
+  // Si se requiere un permiso específico, verificarlo
+  if (requiredModule && requiredPermiso) {
+    if (!tienePermiso(requiredModule, requiredPermiso)) {
+      return (
+        <div className="access-denied">
+          <h2>Acceso Denegado</h2>
+          <p>No tienes permisos para acceder a esta sección</p>
+          <button onClick={() => window.history.back()}>Volver</button>
+        </div>
+      )
+    }
+  }
+
+  // Si solo se requiere acceso al módulo (cualquier permiso)
+  if (requiredModule && !requiredPermiso) {
+    if (!tieneAccesoModulo(requiredModule)) {
+      return (
+        <div className="access-denied">
+          <h2>Acceso Denegado</h2>
+          <p>No tienes permisos para acceder a este módulo</p>
+          <button onClick={() => window.history.back()}>Volver</button>
+        </div>
+      )
+    }
+  }
+
+  return children
 }
 
 function App() {
@@ -74,6 +123,26 @@ function App() {
         <Route
           path="/dashboard"
           element={session ? <Dashboard /> : <Navigate to="/login" />}
+        />
+
+        {/* Rutas de Empleados */}
+        <Route
+          path="/empleado/login"
+          element={
+            <EmpleadoAuthProvider>
+              <LoginEmpleado />
+            </EmpleadoAuthProvider>
+          }
+        />
+        <Route
+          path="/empleado/dashboard"
+          element={
+            <EmpleadoAuthProvider>
+              <ProtectedEmpleadoRoute>
+                <Dashboard />
+              </ProtectedEmpleadoRoute>
+            </EmpleadoAuthProvider>
+          }
         />
 
         {/* Rutas del Portal del Cliente */}
