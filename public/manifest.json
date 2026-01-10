@@ -4,31 +4,37 @@
   "description": "Portal del cliente para gestión de servicios de agua potable JahekaY",
   "start_url": "/portal-cliente/dashboard",
   "scope": "/",
+  "id": "/portal-cliente/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#667eea",
   "theme_color": "#667eea",
-  "orientation": "portrait-primary",
+  "orientation": "any",
+  "lang": "es",
+  "dir": "ltr",
   "icons": [
     {
       "src": "/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "/vite.svg",
-      "sizes": "any",
+      "src": "/icon.svg",
+      "sizes": "512x512",
       "type": "image/svg+xml",
-      "purpose": "any"
+      "purpose": "maskable"
     }
   ],
-  "categories": ["utilities", "productivity"],
+  "categories": ["utilities", "productivity", "business"],
+  "iarc_rating_id": "",
+  "screenshots": [],
   "shortcuts": [
     {
-      "name": "Nuevo Reclamo",
-      "short_name": "Reclamo",
-      "description": "Crear un nuevo reclamo",
-      "url": "/portal-cliente/reclamos",
+      "name": "Ver Dashboard",
+      "short_name": "Dashboard",
+      "description": "Ir al panel principal",
+      "url": "/portal-cliente/dashboard",
       "icons": [
         {
           "src": "/icon.svg",
@@ -40,7 +46,7 @@
     {
       "name": "Mi Consumo",
       "short_name": "Consumo",
-      "description": "Ver mi consumo de agua",
+      "description": "Ver historial de consumo de agua",
       "url": "/portal-cliente/mi-consumo",
       "icons": [
         {
@@ -53,8 +59,21 @@
     {
       "name": "Estado de Cuenta",
       "short_name": "Cuenta",
-      "description": "Ver estado de cuenta",
+      "description": "Ver facturas y estado de cuenta",
       "url": "/portal-cliente/estado-cuenta",
+      "icons": [
+        {
+          "src": "/icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Nuevo Reclamo",
+      "short_name": "Reclamo",
+      "description": "Crear un nuevo reclamo o solicitud",
+      "url": "/portal-cliente/reclamos",
       "icons": [
         {
           "src": "/icon.svg",
@@ -65,5 +84,12 @@
     }
   ],
   "related_applications": [],
-  "prefer_related_applications": false
+  "prefer_related_applications": false,
+  "handle_links": "preferred",
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "edge_side_panel": {
+    "preferred_width": 400
+  }
 }

@@ -1,0 +1,138 @@
+/* ================================================================
+   PULL TO REFRESH - Componente de actualización móvil
+   ================================================================ */
+
+.pull-to-refresh-container {
+  position: relative;
+  overflow: hidden;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ================================================================
+   INDICADOR
+   ================================================================ */
+
+.pull-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.pull-indicator-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: white;
+  border-radius: var(--radius-full, 9999px);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+.pull-arrow {
+  width: 20px;
+  height: 20px;
+  color: var(--primary-color, #667eea);
+}
+
+.pull-text {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--gray-600, #4b5563);
+  white-space: nowrap;
+}
+
+/* ================================================================
+   SPINNER DE REFRESH
+   ================================================================ */
+
+.pull-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--gray-200, #e5e7eb);
+  border-top-color: var(--primary-color, #667eea);
+  border-radius: 50%;
+  animation: pull-spin 0.7s linear infinite;
+}
+
+@keyframes pull-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ================================================================
+   ESTADOS
+   ================================================================ */
+
+.pull-indicator.ready .pull-indicator-content {
+  background: var(--primary-color, #667eea);
+}
+
+.pull-indicator.ready .pull-arrow {
+  color: white;
+}
+
+.pull-indicator.ready .pull-text {
+  color: white;
+}
+
+.pull-indicator.refreshing .pull-indicator-content {
+  background: var(--primary-color, #667eea);
+}
+
+.pull-indicator.refreshing .pull-spinner {
+  border-color: rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+}
+
+.pull-indicator.refreshing .pull-text {
+  color: white;
+}
+
+/* ================================================================
+   CONTENIDO
+   ================================================================ */
+
+.pull-content {
+  will-change: transform;
+}
+
+/* ================================================================
+   ACCESIBILIDAD
+   ================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .pull-spinner {
+    animation: none;
+  }
+
+  .pull-arrow {
+    transition: none;
+  }
+
+  .pull-content {
+    transition: none !important;
+  }
+}
+
+/* ================================================================
+   OCULTAR EN DESKTOP
+   ================================================================ */
+
+@media (min-width: 1024px) {
+  .pull-indicator {
+    display: none;
+  }
+
+  .pull-content {
+    transform: none !important;
+  }
+}

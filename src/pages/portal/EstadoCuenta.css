@@ -1,295 +1,382 @@
-/* ============================================
-   ESTADO DE CUENTA - ESTILOS
-   ============================================ */
+/* ================================================================
+   ESTADO DE CUENTA - PÁGINA OPTIMIZADA MÓVIL PWA
+   ================================================================ */
 
 .estado-cuenta-container {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  padding-bottom: 2rem;
+  min-height: 100%;
+  background: linear-gradient(180deg, var(--gray-50) 0%, #e8ecf4 100%);
+  padding-bottom: 1rem;
 }
 
-/* ============================================
+/* ================================================================
    HEADER
-   ============================================ */
+   ================================================================ */
 
 .estado-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 2rem 1rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: var(--primary-gradient);
+  padding: 1.25rem 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.estado-header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 50%;
+  height: 200%;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.header-content {
+  position: relative;
+  z-index: 1;
 }
 
 .header-content h1 {
   color: white;
   margin: 0;
-  font-size: 1.75rem;
+  font-size: 1.25rem;
   font-weight: 700;
 }
 
 .header-content p {
   color: rgba(255, 255, 255, 0.9);
   margin: 0.25rem 0 0 0;
-  font-size: 0.95rem;
+  font-size: 0.875rem;
 }
 
-/* ============================================
-   RESUMEN
-   ============================================ */
+/* ================================================================
+   RESUMEN CARDS
+   ================================================================ */
 
 .resumen-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 1.5rem 1rem 0 1rem;
+  max-width: 1200px;
+  margin: -1rem auto 1rem;
+  padding: 0 0.75rem;
+  position: relative;
+  z-index: 2;
 }
 
 .resumen-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
 }
 
 .resumen-card {
   background: white;
-  border-radius: 16px;
-  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  padding: 1rem;
   display: flex;
   align-items: center;
-  gap: 1.25rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
+  gap: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+  border: 1px solid rgba(0, 0, 0, 0.04);
 }
 
-.resumen-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+.resumen-card:active {
+  transform: scale(0.98);
 }
 
 .resumen-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 16px;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.75rem;
+  font-size: 1.25rem;
   flex-shrink: 0;
 }
 
 .resumen-info {
   flex: 1;
+  min-width: 0;
 }
 
 .resumen-label {
   margin: 0;
-  color: #888;
-  font-size: 0.875rem;
+  color: var(--gray-500);
+  font-size: 0.6875rem;
   font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .resumen-valor {
-  margin: 0.25rem 0 0 0;
-  color: #333;
-  font-size: 1.75rem;
+  margin: 0.125rem 0 0 0;
+  color: var(--gray-800);
+  font-size: 1.125rem;
   font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* ============================================
+/* ================================================================
    FILTROS
-   ============================================ */
+   ================================================================ */
 
 .filtros-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 1.5rem 1rem;
+  max-width: 1200px;
+  margin: 0 0.75rem 1rem;
+  padding: 1rem;
   background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  margin-bottom: 1.5rem;
-  margin-left: 1rem;
-  margin-right: 1rem;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .filtros-row {
   display: flex;
-  gap: 2rem;
+  gap: 0.75rem;
   flex-wrap: wrap;
 }
 
 .filtro-group {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.375rem;
   flex: 1;
-  min-width: 200px;
+  min-width: 140px;
 }
 
 .filtro-group label {
-  color: #333;
+  color: var(--gray-700);
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.8125rem;
 }
 
 .filtro-group select {
-  padding: 0.75rem 1rem;
-  border: 2px solid #e0e0e0;
-  border-radius: 12px;
-  font-size: 1rem;
+  padding: 0.625rem 2.5rem 0.625rem 0.875rem;
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  font-size: 0.9375rem;
   font-family: inherit;
   background: white;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  min-height: var(--touch-target-min);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
 }
 
 .filtro-group select:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-/* ============================================
+/* ================================================================
    CONTENIDO
-   ============================================ */
+   ================================================================ */
 
 .facturas-content {
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 0.75rem;
 }
+
+/* ================================================================
+   LOADING
+   ================================================================ */
 
 .loading {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 4rem 1rem;
-  gap: 1rem;
+  padding: 3rem 1rem;
+  gap: 0.75rem;
   background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #667eea;
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--gray-200);
+  border-top-color: var(--primary-color);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  to { transform: rotate(360deg); }
 }
 
 .loading p {
-  color: #666;
-  font-size: 1rem;
+  color: var(--gray-500);
+  font-size: 0.9375rem;
+  margin: 0;
 }
 
-/* ============================================
+/* ================================================================
    EMPTY STATE
-   ============================================ */
+   ================================================================ */
 
 .empty-state {
   text-align: center;
-  padding: 4rem 1rem;
+  padding: 3rem 1.5rem;
   background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .empty-icon {
-  font-size: 4rem;
-  margin-bottom: 1rem;
+  font-size: 3rem;
+  margin-bottom: 0.75rem;
   opacity: 0.5;
 }
 
 .empty-state h3 {
-  color: #333;
-  margin: 0 0 0.5rem 0;
-  font-size: 1.5rem;
+  color: var(--gray-800);
+  margin: 0 0 0.375rem 0;
+  font-size: 1.125rem;
 }
 
 .empty-state p {
-  color: #666;
+  color: var(--gray-500);
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.9375rem;
 }
 
-/* ============================================
-   TABLA
-   ============================================ */
+/* ================================================================
+   TABLA RESPONSIVE - CARDS EN MÓVIL
+   ================================================================ */
 
 .tabla-responsive {
   background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   overflow: hidden;
 }
 
+/* Tabla desktop oculta en móvil */
 .facturas-tabla {
-  width: 100%;
-  border-collapse: collapse;
+  display: none;
 }
 
-.facturas-tabla thead {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+/* Lista de cards para móvil */
+.facturas-lista-mobile {
+  display: flex;
+  flex-direction: column;
 }
 
-.facturas-tabla thead th {
+.factura-card-mobile {
   padding: 1rem;
-  text-align: left;
-  color: white;
-  font-weight: 600;
-  font-size: 0.875rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--gray-100);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  touch-action: manipulation;
 }
 
-.facturas-tabla tbody tr {
-  border-bottom: 1px solid #f0f0f0;
-  transition: background-color 0.3s ease;
+.factura-card-mobile:last-child {
+  border-bottom: none;
 }
 
-.facturas-tabla tbody tr:hover {
-  background-color: #f8f9ff;
+.factura-card-mobile:active {
+  background: var(--gray-50);
 }
 
-.facturas-tabla tbody td {
-  padding: 1rem;
-  color: #555;
-  font-size: 0.95rem;
+.factura-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+  gap: 0.75rem;
+}
+
+.factura-numero {
+  font-weight: 700;
+  color: var(--gray-800);
+  font-size: 0.9375rem;
+}
+
+.factura-periodo-mobile {
+  color: var(--gray-500);
+  font-size: 0.8125rem;
+  margin-top: 0.125rem;
 }
 
 .estado-badge-small {
   display: inline-block;
-  padding: 0.375rem 0.875rem;
-  border-radius: 20px;
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--radius-full);
   color: white;
-  font-size: 0.75rem;
+  font-size: 0.625rem;
   font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.03em;
+  flex-shrink: 0;
 }
 
-.acciones-btns {
+.factura-card-body {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.factura-dato {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.factura-dato-label {
+  font-size: 0.6875rem;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.factura-dato-valor {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.factura-dato-valor.monto-total {
+  font-size: 1.125rem;
+  color: var(--primary-color);
+}
+
+.factura-card-actions {
   display: flex;
   gap: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--gray-100);
 }
 
 .btn-accion {
-  background: none;
-  border: none;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.625rem;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  color: var(--gray-700);
+  font-size: 0.8125rem;
+  font-weight: 500;
   cursor: pointer;
-  font-size: 1.25rem;
-  padding: 0.5rem;
-  border-radius: 8px;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  min-height: 40px;
 }
 
-.btn-accion:hover {
-  background: #f0f0f0;
-  transform: scale(1.1);
+.btn-accion:active {
+  background: var(--gray-100);
+  transform: scale(0.98);
 }
 
 .btn-accion:disabled {
@@ -297,9 +384,14 @@
   cursor: not-allowed;
 }
 
-/* ============================================
+.btn-accion svg,
+.btn-accion .btn-icon {
+  font-size: 1rem;
+}
+
+/* ================================================================
    MODAL
-   ============================================ */
+   ================================================================ */
 
 .modal-overlay {
   position: fixed;
@@ -309,37 +401,34 @@
   bottom: 0;
   background: rgba(0, 0, 0, 0.6);
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
-  padding: 1rem;
+  padding: 0;
   z-index: 1000;
   backdrop-filter: blur(4px);
-  animation: fadeIn 0.3s ease;
+  -webkit-backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease;
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .modal-content {
   background: white;
-  border-radius: 20px;
-  max-width: 700px;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   width: 100%;
   max-height: 90vh;
+  max-height: 90dvh;
   overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.2);
   animation: slideUp 0.3s ease;
 }
 
 @keyframes slideUp {
   from {
-    transform: translateY(50px);
+    transform: translateY(100%);
     opacity: 0;
   }
   to {
@@ -349,26 +438,28 @@
 }
 
 .modal-header {
-  padding: 1.5rem;
-  border-bottom: 1px solid #e0e0e0;
+  padding: 1.25rem;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 20px 20px 0 0;
+  background: var(--primary-gradient);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 .modal-header h2 {
   margin: 0;
   color: white;
-  font-size: 1.5rem;
+  font-size: 1.125rem;
   font-weight: 700;
 }
 
 .periodo-detalle {
   color: rgba(255, 255, 255, 0.9);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   margin: 0.25rem 0 0 0;
 }
 
@@ -380,76 +471,84 @@
   height: 36px;
   border-radius: 50%;
   cursor: pointer;
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   flex-shrink: 0;
 }
 
-.btn-close:hover {
+.btn-close:active {
   background: rgba(255, 255, 255, 0.3);
-  transform: rotate(90deg);
+  transform: scale(0.95);
 }
 
-/* ============================================
+/* ================================================================
    DETALLE
-   ============================================ */
+   ================================================================ */
 
 .detalle-body {
-  padding: 1.5rem;
+  padding: 1.25rem;
 }
 
 .detalle-estado {
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
 }
 
 .estado-badge-large {
   display: inline-block;
-  padding: 0.625rem 1.5rem;
-  border-radius: 24px;
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--radius-full);
   color: white;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .detalle-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
 }
 
 .detalle-section h3 {
-  color: #333;
-  margin: 0 0 1rem 0;
-  font-size: 1rem;
+  color: var(--gray-800);
+  margin: 0 0 0.75rem 0;
+  font-size: 0.9375rem;
   font-weight: 600;
   padding-bottom: 0.5rem;
-  border-bottom: 2px solid #f0f0f0;
+  border-bottom: 2px solid var(--gray-100);
 }
 
 .detalle-section p {
-  color: #555;
-  margin: 0.5rem 0;
-  font-size: 0.95rem;
+  color: var(--gray-600);
+  margin: 0.375rem 0;
+  font-size: 0.9375rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.detalle-section p strong {
+  color: var(--gray-800);
 }
 
 .total-section {
-  grid-column: 1 / -1;
   text-align: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 1.5rem;
-  border-radius: 12px;
+  background: var(--primary-gradient);
+  padding: 1.25rem;
+  border-radius: var(--radius-lg);
+  margin-top: 1rem;
 }
 
 .total-section h3 {
   color: white;
   border-bottom: none;
   margin-bottom: 0.5rem;
+  font-size: 0.875rem;
 }
 
 .total-valor {
@@ -462,26 +561,29 @@
 .detalle-actions {
   display: flex;
   justify-content: center;
-  padding-top: 1rem;
-  border-top: 1px solid #e0e0e0;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--gray-200);
 }
 
 .btn-primary {
-  padding: 0.75rem 1.5rem;
-  border-radius: 12px;
+  padding: 0.875rem 1.5rem;
+  border-radius: var(--radius-lg);
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 0.9375rem;
   cursor: pointer;
   border: none;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--primary-gradient);
   color: white;
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  min-height: var(--touch-target-min);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+.btn-primary:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 .btn-primary:disabled {
@@ -490,96 +592,299 @@
 }
 
 .btn-descargar-full {
-  min-width: 200px;
+  width: 100%;
+  justify-content: center;
 }
 
-/* ============================================
-   RESPONSIVE
-   ============================================ */
+/* ================================================================
+   RESPONSIVE - TABLET
+   ================================================================ */
 
-@media (max-width: 1024px) {
-  .facturas-tabla thead {
-    display: none;
-  }
-
-  .facturas-tabla tbody tr {
-    display: block;
-    margin-bottom: 1rem;
-    border: 1px solid #e0e0e0;
-    border-radius: 12px;
-    overflow: hidden;
-  }
-
-  .facturas-tabla tbody td {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid #f0f0f0;
-  }
-
-  .facturas-tabla tbody td:last-child {
-    border-bottom: none;
-  }
-
-  .facturas-tabla tbody td::before {
-    content: attr(data-label);
-    font-weight: 600;
-    color: #333;
-  }
-
-  .acciones-btns {
-    margin-left: auto;
-  }
-}
-
-@media (max-width: 768px) {
+@media (min-width: 600px) {
   .estado-header {
-    text-align: center;
+    padding: 1.5rem 1rem;
+  }
+
+  .resumen-container {
+    padding: 0 1rem;
+    margin-top: -1.25rem;
+  }
+
+  .resumen-cards {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+
+  .resumen-card {
+    padding: 1.25rem;
+  }
+
+  .resumen-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 1.5rem;
+  }
+
+  .resumen-valor {
+    font-size: 1.375rem;
+  }
+
+  .filtros-container {
+    margin: 0 1rem 1rem;
+    padding: 1.25rem;
+  }
+
+  .facturas-content {
+    padding: 0 1rem;
+  }
+
+  .factura-card-body {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .modal-overlay {
+    align-items: center;
+    padding: 1rem;
+  }
+
+  .modal-content {
+    border-radius: var(--radius-xl);
+    max-width: 600px;
+    max-height: 85vh;
+  }
+
+  .modal-header {
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  }
+
+  .detalle-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .total-section {
+    grid-column: 1 / -1;
+  }
+
+  .btn-descargar-full {
+    width: auto;
+    min-width: 200px;
+  }
+}
+
+/* ================================================================
+   RESPONSIVE - DESKTOP
+   ================================================================ */
+
+@media (min-width: 1024px) {
+  .estado-header {
+    padding: 1.5rem;
   }
 
   .header-content h1 {
     font-size: 1.5rem;
   }
 
+  .resumen-container {
+    padding: 0 1.5rem;
+  }
+
+  .resumen-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+  }
+
+  .filtros-container {
+    margin: 0 1.5rem 1.25rem;
+  }
+
+  .facturas-content {
+    padding: 0 1.5rem;
+  }
+
+  /* Mostrar tabla en desktop */
+  .facturas-tabla {
+    display: table;
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .facturas-lista-mobile {
+    display: none;
+  }
+
+  .facturas-tabla thead {
+    background: var(--primary-gradient);
+  }
+
+  .facturas-tabla thead th {
+    padding: 1rem;
+    text-align: left;
+    color: white;
+    font-weight: 600;
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .facturas-tabla tbody tr {
+    border-bottom: 1px solid var(--gray-100);
+    transition: background-color 0.2s ease;
+  }
+
+  .facturas-tabla tbody tr:hover {
+    background-color: rgba(102, 126, 234, 0.05);
+  }
+
+  .facturas-tabla tbody td {
+    padding: 1rem;
+    color: var(--gray-700);
+    font-size: 0.9375rem;
+  }
+
+  .acciones-btns {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .acciones-btns .btn-accion {
+    flex: none;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: var(--radius);
+  }
+
+  .acciones-btns .btn-accion:hover:not(:disabled) {
+    background: var(--primary-light);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+  }
+
+  .modal-content {
+    max-width: 700px;
+  }
+
+  .modal-header h2 {
+    font-size: 1.375rem;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+  }
+}
+
+/* ================================================================
+   RESPONSIVE - PANTALLA PEQUEÑA
+   ================================================================ */
+
+@media (max-width: 359px) {
   .resumen-cards {
     grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .resumen-card {
+    padding: 0.875rem;
   }
 
   .filtros-row {
     flex-direction: column;
-    gap: 1rem;
   }
 
   .filtro-group {
     min-width: 100%;
   }
 
-  .detalle-grid {
+  .factura-card-body {
     grid-template-columns: 1fr;
+    gap: 0.5rem;
   }
 
-  .total-section {
-    grid-column: 1;
+  .factura-card-actions {
+    flex-direction: column;
   }
 
-  .modal-content {
-    margin: 0.5rem;
-    max-height: 95vh;
-  }
-
-  .modal-header h2 {
-    font-size: 1.25rem;
+  .total-valor {
+    font-size: 1.75rem;
   }
 }
 
-@media (max-width: 480px) {
+/* ================================================================
+   LANDSCAPE MODE
+   ================================================================ */
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .estado-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .header-content h1 {
+    font-size: 1.125rem;
+  }
+
+  .resumen-container {
+    margin-top: -0.75rem;
+  }
+
+  .resumen-cards {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+  }
+
   .resumen-card {
-    flex-direction: column;
-    text-align: center;
+    padding: 0.75rem;
+  }
+
+  .resumen-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
   }
 
   .resumen-valor {
-    font-size: 1.5rem;
+    font-size: 1rem;
   }
+
+  .filtros-container {
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .modal-content {
+    max-height: 95vh;
+    max-height: 95dvh;
+  }
+
+  .modal-header {
+    padding: 1rem;
+  }
+
+  .detalle-body {
+    padding: 1rem;
+  }
+}
+
+/* ================================================================
+   ACCESIBILIDAD
+   ================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .resumen-card,
+  .factura-card-mobile,
+  .btn-accion,
+  .btn-primary,
+  .btn-close,
+  .modal-content {
+    transition: none;
+    animation: none;
+  }
+}
+
+.factura-card-mobile:focus-visible,
+.btn-accion:focus-visible,
+.btn-primary:focus-visible,
+.btn-close:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
 }

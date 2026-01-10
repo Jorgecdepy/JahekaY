@@ -1,255 +1,302 @@
-/* ============================================
-   MI CONSUMO - ESTILOS
-   ============================================ */
+/* ================================================================
+   MI CONSUMO - PÁGINA OPTIMIZADA MÓVIL PWA
+   ================================================================ */
 
 .mi-consumo-container {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  padding-bottom: 2rem;
+  min-height: 100%;
+  background: linear-gradient(180deg, var(--gray-50) 0%, #e8ecf4 100%);
+  padding-bottom: 1rem;
 }
 
-/* ============================================
+/* ================================================================
    HEADER
-   ============================================ */
+   ================================================================ */
 
 .consumo-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 2rem 1rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: var(--primary-gradient);
+  padding: 1.25rem 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 0.75rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.consumo-header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 50%;
+  height: 200%;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.header-content {
+  position: relative;
+  z-index: 1;
 }
 
 .header-content h1 {
   color: white;
   margin: 0;
-  font-size: 1.75rem;
+  font-size: 1.25rem;
   font-weight: 700;
 }
 
 .header-content p {
   color: rgba(255, 255, 255, 0.9);
   margin: 0.25rem 0 0 0;
-  font-size: 0.95rem;
+  font-size: 0.875rem;
 }
 
 .header-controls {
   display: flex;
-  gap: 1rem;
+  gap: 0.5rem;
+  position: relative;
+  z-index: 1;
 }
 
 .periodo-select {
-  padding: 0.75rem 1rem;
-  border: 2px solid white;
-  border-radius: 12px;
-  font-size: 1rem;
+  padding: 0.625rem 2.25rem 0.625rem 0.875rem;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-md);
+  font-size: 0.9375rem;
   font-weight: 600;
   background: white;
-  color: #667eea;
+  color: var(--primary-color);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  min-height: var(--touch-target-min);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23667eea' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.625rem center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .periodo-select:focus {
   outline: none;
+  border-color: white;
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
 }
 
-/* ============================================
+/* ================================================================
    ESTADÍSTICAS
-   ============================================ */
+   ================================================================ */
 
 .estadisticas-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 1.5rem 1rem 0 1rem;
+  max-width: 1200px;
+  margin: -1rem auto 1rem;
+  padding: 0 0.75rem;
+  position: relative;
+  z-index: 2;
 }
 
 .estadisticas-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
 }
 
 .estadistica-card {
   background: white;
-  border-radius: 16px;
-  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  padding: 1rem;
   display: flex;
   align-items: center;
-  gap: 1.25rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
+  gap: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+  border: 1px solid rgba(0, 0, 0, 0.04);
 }
 
-.estadistica-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+.estadistica-card:active {
+  transform: scale(0.98);
 }
 
 .estadistica-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 16px;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.75rem;
+  font-size: 1.25rem;
   flex-shrink: 0;
 }
 
 .estadistica-info {
   flex: 1;
+  min-width: 0;
 }
 
 .estadistica-label {
   margin: 0;
-  color: #888;
-  font-size: 0.875rem;
+  color: var(--gray-500);
+  font-size: 0.6875rem;
   font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .estadistica-valor {
-  margin: 0.25rem 0;
-  color: #333;
-  font-size: 1.75rem;
+  margin: 0.125rem 0;
+  color: var(--gray-800);
+  font-size: 1.125rem;
   font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .estadistica-sublabel {
   margin: 0;
-  color: #aaa;
-  font-size: 0.8rem;
+  color: var(--gray-400);
+  font-size: 0.6875rem;
 }
 
-/* ============================================
+/* ================================================================
    CONTROLES DE VISTA
-   ============================================ */
+   ================================================================ */
 
 .vista-controls {
-  max-width: 1400px;
-  margin: 0 auto 1.5rem auto;
-  padding: 0 1rem;
+  max-width: 1200px;
+  margin: 0 auto 1rem auto;
+  padding: 0 0.75rem;
   display: flex;
-  gap: 1rem;
+  gap: 0.5rem;
   justify-content: center;
 }
 
 .vista-btn {
-  padding: 0.75rem 1.5rem;
-  border: 2px solid #e0e0e0;
+  flex: 1;
+  max-width: 160px;
+  padding: 0.625rem 1rem;
+  border: 2px solid var(--gray-200);
   background: white;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 0.8125rem;
   cursor: pointer;
-  transition: all 0.3s ease;
-  color: #666;
+  transition: all 0.2s ease;
+  color: var(--gray-600);
+  min-height: var(--touch-target-min);
+  touch-action: manipulation;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
 }
 
-.vista-btn:hover {
-  border-color: #667eea;
-  color: #667eea;
-  background: #f8f9ff;
+.vista-btn:active {
+  transform: scale(0.97);
 }
 
 .vista-btn.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--primary-gradient);
   color: white;
   border-color: transparent;
+  box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);
 }
 
-/* ============================================
+/* ================================================================
    CONTENIDO
-   ============================================ */
+   ================================================================ */
 
 .consumo-content {
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 0.75rem;
 }
+
+/* ================================================================
+   LOADING
+   ================================================================ */
 
 .loading {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 4rem 1rem;
-  gap: 1rem;
+  padding: 3rem 1rem;
+  gap: 0.75rem;
   background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #667eea;
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--gray-200);
+  border-top-color: var(--primary-color);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  to { transform: rotate(360deg); }
 }
 
 .loading p {
-  color: #666;
-  font-size: 1rem;
+  color: var(--gray-500);
+  font-size: 0.9375rem;
+  margin: 0;
 }
 
-/* ============================================
+/* ================================================================
    EMPTY STATE
-   ============================================ */
+   ================================================================ */
 
 .empty-state {
   text-align: center;
-  padding: 4rem 1rem;
+  padding: 3rem 1.5rem;
   background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .empty-icon {
-  font-size: 4rem;
-  margin-bottom: 1rem;
+  font-size: 3rem;
+  margin-bottom: 0.75rem;
   opacity: 0.5;
 }
 
 .empty-state h3 {
-  color: #333;
-  margin: 0 0 0.5rem 0;
-  font-size: 1.5rem;
+  color: var(--gray-800);
+  margin: 0 0 0.375rem 0;
+  font-size: 1.125rem;
 }
 
 .empty-state p {
-  color: #666;
+  color: var(--gray-500);
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.9375rem;
 }
 
-/* ============================================
+/* ================================================================
    GRÁFICO
-   ============================================ */
+   ================================================================ */
 
 .grafico-container {
   background: white;
-  border-radius: 16px;
-  padding: 2rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  margin-bottom: 2rem;
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1rem;
 }
 
 .grafico-wrapper {
   position: relative;
-  height: 400px;
-  margin-bottom: 2rem;
+  height: 220px;
+  margin-bottom: 1rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .grafico-barras {
@@ -257,9 +304,10 @@
   align-items: flex-end;
   justify-content: space-around;
   height: 100%;
-  gap: 0.5rem;
-  padding: 2rem 1rem 3rem 1rem;
+  gap: 0.375rem;
+  padding: 1.5rem 0.5rem 2rem;
   position: relative;
+  min-width: max-content;
 }
 
 .barra-wrapper {
@@ -268,52 +316,54 @@
   flex-direction: column;
   align-items: center;
   height: 100%;
-  min-width: 40px;
-  max-width: 80px;
+  min-width: 36px;
+  max-width: 60px;
 }
 
 .barra {
   width: 100%;
-  min-height: 20px;
-  border-radius: 8px 8px 0 0;
+  min-height: 16px;
+  border-radius: 6px 6px 0 0;
   position: relative;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   cursor: pointer;
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding-top: 0.5rem;
+  padding-top: 0.375rem;
+  touch-action: manipulation;
 }
 
-.barra:hover {
-  opacity: 0.8;
-  transform: translateY(-4px);
+.barra:active {
+  opacity: 0.85;
+  transform: translateY(-2px);
 }
 
 .barra-actual {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  background: var(--primary-gradient);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
 
 .barra-bajo-promedio {
-  background: #4caf50;
+  background: var(--success-color);
 }
 
 .barra-sobre-promedio {
-  background: #ff9800;
+  background: var(--warning-color);
 }
 
 .barra-valor {
   color: white;
-  font-size: 0.75rem;
+  font-size: 0.5625rem;
   font-weight: 700;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
 }
 
 .barra-label {
-  margin-top: 0.5rem;
-  color: #666;
-  font-size: 0.75rem;
+  margin-top: 0.375rem;
+  color: var(--gray-500);
+  font-size: 0.5625rem;
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
@@ -328,20 +378,20 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: #2196f3;
-  border: 1px dashed #2196f3;
+  background: var(--info-color);
+  border-style: dashed;
   z-index: 1;
 }
 
 .linea-promedio-label {
   position: absolute;
-  right: 1rem;
-  top: -10px;
-  background: #2196f3;
+  right: 0.5rem;
+  top: -8px;
+  background: var(--info-color);
   color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--radius-full);
+  font-size: 0.5625rem;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -350,199 +400,445 @@
 .grafico-leyenda {
   display: flex;
   justify-content: center;
-  gap: 2rem;
+  gap: 1rem;
   flex-wrap: wrap;
-  padding-top: 1rem;
-  border-top: 1px solid #f0f0f0;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--gray-100);
 }
 
 .leyenda-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-  color: #666;
+  gap: 0.375rem;
+  font-size: 0.6875rem;
+  color: var(--gray-600);
 }
 
 .leyenda-color {
-  width: 20px;
-  height: 20px;
-  border-radius: 4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
 }
 
-/* ============================================
-   TABLA
-   ============================================ */
+/* ================================================================
+   TABLA - CARDS EN MÓVIL
+   ================================================================ */
 
 .tabla-container {
   background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   overflow: hidden;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
 
+/* Tabla desktop oculta en móvil */
 .consumo-tabla {
-  width: 100%;
-  border-collapse: collapse;
+  display: none;
 }
 
-.consumo-tabla thead {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+/* Lista de cards para móvil */
+.consumo-lista-mobile {
+  display: flex;
+  flex-direction: column;
 }
 
-.consumo-tabla thead th {
-  padding: 1rem;
-  text-align: left;
-  color: white;
+.consumo-card-mobile {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--gray-100);
+  transition: all 0.2s ease;
+  touch-action: manipulation;
+}
+
+.consumo-card-mobile:last-child {
+  border-bottom: none;
+}
+
+.consumo-card-mobile:active {
+  background: var(--gray-50);
+}
+
+.consumo-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.consumo-periodo {
   font-weight: 600;
-  font-size: 0.875rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.consumo-tabla tbody tr {
-  border-bottom: 1px solid #f0f0f0;
-  transition: background-color 0.3s ease;
-}
-
-.consumo-tabla tbody tr:hover {
-  background-color: #f8f9ff;
-}
-
-.consumo-tabla tbody td {
-  padding: 1rem;
-  color: #555;
-  font-size: 0.95rem;
-}
-
-.consumo-valor {
-  color: #667eea;
-  font-size: 1.1rem;
+  color: var(--gray-800);
+  font-size: 0.9375rem;
+  text-transform: capitalize;
 }
 
 .diferencia-badge {
-  display: inline-block;
-  padding: 0.375rem 0.875rem;
-  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-full);
   color: white;
-  font-size: 0.75rem;
+  font-size: 0.625rem;
   font-weight: 600;
 }
 
 .diferencia-alta {
-  background: #ff9800;
+  background: var(--warning-color);
 }
 
 .diferencia-baja {
-  background: #4caf50;
+  background: var(--success-color);
 }
 
-/* ============================================
+.consumo-card-body {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.consumo-dato {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.consumo-dato-label {
+  font-size: 0.6875rem;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.consumo-dato-valor {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.consumo-dato-valor.consumo-highlight {
+  color: var(--primary-color);
+  font-size: 1rem;
+}
+
+/* ================================================================
    TIPS
-   ============================================ */
+   ================================================================ */
 
 .tips-container {
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem 1rem;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 1rem 0.75rem;
 }
 
-.tips-container h2 {
+.tips-title {
   text-align: center;
-  color: #333;
-  margin: 0 0 2rem 0;
-  font-size: 1.75rem;
+  color: var(--gray-800);
+  margin: 0 0 1rem 0;
+  font-size: 1.125rem;
+  font-weight: 600;
 }
 
 .tips-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
 }
 
 .tip-card {
-  background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
-  border-radius: 12px;
-  padding: 1.5rem;
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 1rem;
   text-align: center;
-  transition: all 0.3s ease;
-  border: 2px solid transparent;
+  transition: all 0.2s ease;
+  border: 1px solid var(--gray-100);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
-.tip-card:hover {
-  transform: translateY(-4px);
-  border-color: #667eea;
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
+.tip-card:active {
+  transform: scale(0.98);
+  border-color: var(--primary-color);
 }
 
 .tip-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  display: block;
 }
 
 .tip-card h3 {
-  color: #333;
-  margin: 0 0 0.75rem 0;
-  font-size: 1.1rem;
+  color: var(--gray-800);
+  margin: 0 0 0.375rem 0;
+  font-size: 0.8125rem;
   font-weight: 600;
 }
 
 .tip-card p {
-  color: #666;
+  color: var(--gray-500);
   margin: 0;
-  font-size: 0.95rem;
-  line-height: 1.5;
+  font-size: 0.75rem;
+  line-height: 1.4;
 }
 
-/* ============================================
-   RESPONSIVE
-   ============================================ */
+/* ================================================================
+   RESPONSIVE - TABLET
+   ================================================================ */
 
-@media (max-width: 1024px) {
-  .consumo-tabla thead {
-    display: none;
-  }
-
-  .consumo-tabla tbody tr {
-    display: block;
-    margin-bottom: 1rem;
-    border: 1px solid #e0e0e0;
-    border-radius: 12px;
-    overflow: hidden;
-  }
-
-  .consumo-tabla tbody td {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid #f0f0f0;
-  }
-
-  .consumo-tabla tbody td:last-child {
-    border-bottom: none;
-  }
-
-  .consumo-tabla tbody td::before {
-    content: attr(data-label);
-    font-weight: 600;
-    color: #333;
-  }
-}
-
-@media (max-width: 768px) {
+@media (min-width: 600px) {
   .consumo-header {
-    flex-direction: column;
-    align-items: stretch;
-    text-align: center;
+    padding: 1.5rem 1rem;
   }
 
   .header-content h1 {
     font-size: 1.5rem;
+  }
+
+  .estadisticas-container {
+    padding: 0 1rem;
+    margin-top: -1.25rem;
+  }
+
+  .estadisticas-cards {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+
+  .estadistica-card {
+    padding: 1.25rem;
+  }
+
+  .estadistica-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 1.5rem;
+  }
+
+  .estadistica-valor {
+    font-size: 1.375rem;
+  }
+
+  .vista-controls {
+    padding: 0 1rem;
+    gap: 0.75rem;
+  }
+
+  .vista-btn {
+    max-width: 200px;
+    font-size: 0.875rem;
+  }
+
+  .consumo-content {
+    padding: 0 1rem;
+  }
+
+  .grafico-container {
+    padding: 1.5rem;
+  }
+
+  .grafico-wrapper {
+    height: 280px;
+  }
+
+  .barra-wrapper {
+    min-width: 48px;
+    max-width: 72px;
+  }
+
+  .barra-valor {
+    font-size: 0.6875rem;
+  }
+
+  .barra-label {
+    font-size: 0.6875rem;
+  }
+
+  .grafico-leyenda {
+    gap: 1.5rem;
+  }
+
+  .leyenda-item {
+    font-size: 0.8125rem;
+  }
+
+  .leyenda-color {
+    width: 16px;
+    height: 16px;
+  }
+
+  .consumo-card-body {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .tips-container {
+    padding: 1.5rem 1rem;
+  }
+
+  .tips-title {
+    font-size: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .tips-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+
+  .tip-icon {
+    font-size: 2.5rem;
+  }
+
+  .tip-card h3 {
+    font-size: 0.9375rem;
+  }
+
+  .tip-card p {
+    font-size: 0.8125rem;
+  }
+}
+
+/* ================================================================
+   RESPONSIVE - DESKTOP
+   ================================================================ */
+
+@media (min-width: 1024px) {
+  .consumo-header {
+    padding: 1.5rem;
+  }
+
+  .estadisticas-container {
+    padding: 0 1.5rem;
+  }
+
+  .estadistica-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+  }
+
+  .vista-controls {
+    padding: 0 1.5rem;
+  }
+
+  .vista-btn:hover:not(.active) {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background: var(--primary-light);
+  }
+
+  .consumo-content {
+    padding: 0 1.5rem;
+  }
+
+  .grafico-container {
+    padding: 2rem;
+  }
+
+  .grafico-wrapper {
+    height: 350px;
+    overflow: visible;
+  }
+
+  .grafico-barras {
+    min-width: auto;
+  }
+
+  .barra-wrapper {
+    min-width: 56px;
+    max-width: 80px;
+  }
+
+  .barra:hover {
+    opacity: 0.9;
+    transform: translateY(-4px);
+  }
+
+  .barra-valor {
+    font-size: 0.75rem;
+  }
+
+  .barra-label {
+    font-size: 0.75rem;
+  }
+
+  /* Mostrar tabla en desktop */
+  .consumo-tabla {
+    display: table;
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .consumo-lista-mobile {
+    display: none;
+  }
+
+  .consumo-tabla thead {
+    background: var(--primary-gradient);
+  }
+
+  .consumo-tabla thead th {
+    padding: 1rem;
+    text-align: left;
+    color: white;
+    font-weight: 600;
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .consumo-tabla tbody tr {
+    border-bottom: 1px solid var(--gray-100);
+    transition: background-color 0.2s ease;
+  }
+
+  .consumo-tabla tbody tr:hover {
+    background-color: rgba(102, 126, 234, 0.05);
+  }
+
+  .consumo-tabla tbody td {
+    padding: 1rem;
+    color: var(--gray-700);
+    font-size: 0.9375rem;
+  }
+
+  .consumo-valor {
+    color: var(--primary-color);
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .tip-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--primary-color);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
+  }
+
+  .tip-card {
+    padding: 1.5rem;
+  }
+
+  .tip-icon {
+    font-size: 3rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .tip-card h3 {
+    font-size: 1rem;
+  }
+
+  .tip-card p {
+    font-size: 0.9375rem;
+  }
+}
+
+/* ================================================================
+   RESPONSIVE - PANTALLA PEQUEÑA
+   ================================================================ */
+
+@media (max-width: 359px) {
+  .consumo-header {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
   }
 
   .header-controls {
@@ -551,6 +847,11 @@
 
   .estadisticas-cards {
     grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .estadistica-card {
+    padding: 0.875rem;
   }
 
   .vista-controls {
@@ -558,47 +859,109 @@
   }
 
   .vista-btn {
-    width: 100%;
+    max-width: none;
   }
 
   .grafico-wrapper {
-    height: 300px;
+    height: 180px;
   }
 
-  .barra-label {
-    font-size: 0.65rem;
+  .barra-wrapper {
+    min-width: 28px;
   }
 
-  .linea-promedio-label {
-    font-size: 0.65rem;
-    padding: 0.2rem 0.5rem;
+  .consumo-card-body {
+    grid-template-columns: 1fr;
+    gap: 0.375rem;
   }
 
   .tips-grid {
     grid-template-columns: 1fr;
+    gap: 0.5rem;
   }
 }
 
-@media (max-width: 480px) {
+/* ================================================================
+   LANDSCAPE MODE
+   ================================================================ */
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .consumo-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .header-content h1 {
+    font-size: 1.125rem;
+  }
+
+  .estadisticas-container {
+    margin-top: -0.75rem;
+  }
+
+  .estadisticas-cards {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+  }
+
   .estadistica-card {
-    flex-direction: column;
-    text-align: center;
+    padding: 0.75rem;
+  }
+
+  .estadistica-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
   }
 
   .estadistica-valor {
+    font-size: 1rem;
+  }
+
+  .vista-controls {
+    margin-bottom: 0.75rem;
+  }
+
+  .grafico-wrapper {
+    height: 160px;
+  }
+
+  .tips-container {
+    padding: 0.75rem;
+  }
+
+  .tips-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+  }
+
+  .tip-card {
+    padding: 0.75rem;
+  }
+
+  .tip-icon {
     font-size: 1.5rem;
+    margin-bottom: 0.25rem;
   }
+}
 
-  .grafico-barras {
-    gap: 0.25rem;
-    padding: 1rem 0.5rem 3rem 0.5rem;
-  }
+/* ================================================================
+   ACCESIBILIDAD
+   ================================================================ */
 
-  .barra-wrapper {
-    min-width: 30px;
+@media (prefers-reduced-motion: reduce) {
+  .estadistica-card,
+  .barra,
+  .tip-card,
+  .vista-btn,
+  .consumo-card-mobile {
+    transition: none;
   }
+}
 
-  .barra-valor {
-    font-size: 0.65rem;
-  }
+.vista-btn:focus-visible,
+.barra:focus-visible,
+.tip-card:focus-visible,
+.consumo-card-mobile:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
 }
