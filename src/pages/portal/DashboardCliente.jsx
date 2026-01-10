@@ -47,51 +47,50 @@ function DashboardCliente() {
   }
 
   const cargarFacturasPendientes = async () => {
-    const { data, error } = await supabase
-      .from('facturas')
-      .select('*')
-      .eq('cliente_id', cliente.id)
-      .in('estado', ['pendiente', 'vencida'])
-      .order('fecha_vencimiento', { ascending: true })
-      .limit(5)
+    // Usar RPC para obtener facturas (funciona sin sesión de Supabase Auth)
+    const { data, error } = await supabase.rpc('obtener_facturas_cliente', {
+      p_cliente_id: cliente.id,
+      p_estado: null,
+      p_limite: 5
+    })
 
-    if (!error) {
-      setFacturasPendientes(data || [])
+    if (!error && data) {
+      // Filtrar solo pendientes y vencidas
+      const pendientes = data.filter(f => f.estado === 'pendiente' || f.estado === 'vencida')
+      setFacturasPendientes(pendientes)
     }
   }
 
   const cargarNotificaciones = async () => {
-    const { data, error } = await supabase
-      .from('notificaciones_clientes')
-      .select('*')
-      .eq('cliente_id', cliente.id)
-      .order('created_at', { ascending: false })
-      .limit(5)
+    // Usar RPC para obtener notificaciones (funciona sin sesión de Supabase Auth)
+    const { data, error } = await supabase.rpc('obtener_notificaciones_cliente', {
+      p_cliente_id: cliente.id,
+      p_limite: 5
+    })
 
-    if (!error) {
-      setNotificaciones(data || [])
+    if (!error && data) {
+      setNotificaciones(data)
     }
   }
 
   const cargarUltimaLectura = async () => {
-    const { data, error } = await supabase
-      .from('lecturas')
-      .select('*')
-      .eq('cliente_id', cliente.id)
-      .order('fecha_lectura', { ascending: false })
-      .limit(1)
-      .single()
+    // Usar RPC para obtener lecturas (funciona sin sesión de Supabase Auth)
+    const { data, error } = await supabase.rpc('obtener_lecturas_cliente', {
+      p_cliente_id: cliente.id,
+      p_limite: 1
+    })
 
-    if (!error && data) {
-      setUltimaLectura(data)
+    if (!error && data && data.length > 0) {
+      setUltimaLectura(data[0])
     }
   }
 
   const marcarNotificacionLeida = async (notificacionId) => {
-    await supabase
-      .from('notificaciones_clientes')
-      .update({ leida: true })
-      .eq('id', notificacionId)
+    // Usar RPC para marcar notificación (funciona sin sesión de Supabase Auth)
+    await supabase.rpc('marcar_notificacion_leida', {
+      p_notificacion_id: notificacionId,
+      p_cliente_id: cliente.id
+    })
 
     cargarNotificaciones()
   }

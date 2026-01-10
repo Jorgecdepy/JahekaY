@@ -332,6 +332,300 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- Permisos de ejecución para usuarios anónimos y autenticados
+GRANT EXECUTE ON FUNCTION autenticar_cliente(VARCHAR, VARCHAR) TO anon;
+GRANT EXECUTE ON FUNCTION autenticar_cliente(VARCHAR, VARCHAR) TO authenticated;
+
+-- ========================================
+-- FUNCIONES RPC PARA EL PORTAL DEL CLIENTE
+-- (Permiten acceso a datos sin sesión de Supabase Auth)
+-- ========================================
+
+-- Función para obtener facturas del cliente
+CREATE OR REPLACE FUNCTION obtener_facturas_cliente(
+  p_cliente_id UUID,
+  p_estado VARCHAR DEFAULT NULL,
+  p_limite INT DEFAULT 100
+)
+RETURNS JSONB AS $$
+DECLARE
+  v_facturas JSONB;
+BEGIN
+  SELECT COALESCE(jsonb_agg(row_to_json(f.*)), '[]'::jsonb)
+  INTO v_facturas
+  FROM (
+    SELECT *
+    FROM facturas
+    WHERE cliente_id = p_cliente_id
+      AND (p_estado IS NULL OR estado = p_estado)
+    ORDER BY fecha_emision DESC
+    LIMIT p_limite
+  ) f;
+
+  RETURN v_facturas;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+GRANT EXECUTE ON FUNCTION obtener_facturas_cliente(UUID, VARCHAR, INT) TO anon;
+GRANT EXECUTE ON FUNCTION obtener_facturas_cliente(UUID, VARCHAR, INT) TO authenticated;
+
+-- Función para obtener lecturas del cliente
+CREATE OR REPLACE FUNCTION obtener_lecturas_cliente(
+  p_cliente_id UUID,
+  p_limite INT DEFAULT 50
+)
+RETURNS JSONB AS $$
+DECLARE
+  v_lecturas JSONB;
+BEGIN
+  SELECT COALESCE(jsonb_agg(row_to_json(l.*)), '[]'::jsonb)
+  INTO v_lecturas
+  FROM (
+    SELECT *
+    FROM lecturas
+    WHERE cliente_id = p_cliente_id
+    ORDER BY fecha_lectura DESC
+    LIMIT p_limite
+  ) l;
+
+  RETURN v_lecturas;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+GRANT EXECUTE ON FUNCTION obtener_lecturas_cliente(UUID, INT) TO anon;
+GRANT EXECUTE ON FUNCTION obtener_lecturas_cliente(UUID, INT) TO authenticated;
+
+-- Función para obtener notificaciones del cliente
+CREATE OR REPLACE FUNCTION obtener_notificaciones_cliente(
+  p_cliente_id UUID,
+  p_limite INT DEFAULT 20
+)
+RETURNS JSONB AS $$
+DECLARE
+  v_notificaciones JSONB;
+BEGIN
+  SELECT COALESCE(jsonb_agg(row_to_json(n.*)), '[]'::jsonb)
+  INTO v_notificaciones
+  FROM (
+    SELECT *
+    FROM notificaciones_clientes
+    WHERE cliente_id = p_cliente_id
+    ORDER BY created_at DESC
+    LIMIT p_limite
+  ) n;
+
+  RETURN v_notificaciones;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+GRANT EXECUTE ON FUNCTION obtener_notificaciones_cliente(UUID, INT) TO anon;
+GRANT EXECUTE ON FUNCTION obtener_notificaciones_cliente(UUID, INT) TO authenticated;
+
+-- Función para marcar notificación como leída
+CREATE OR REPLACE FUNCTION marcar_notificacion_leida(
+  p_notificacion_id UUID,
+  p_cliente_id UUID
+)
+RETURNS BOOLEAN AS $$
+BEGIN
+  UPDATE notificaciones_clientes
+  SET leida = true
+  WHERE id = p_notificacion_id
+    AND cliente_id = p_cliente_id;
+
+  RETURN FOUND;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+GRANT EXECUTE ON FUNCTION marcar_notificacion_leida(UUID, UUID) TO anon;
+GRANT EXECUTE ON FUNCTION marcar_notificacion_leida(UUID, UUID) TO authenticated;
+
+-- Función para obtener reclamos del cliente
+CREATE OR REPLACE FUNCTION obtener_reclamos_cliente(
+  p_cliente_id UUID,
+  p_estado VARCHAR DEFAULT NULL
+)
+RETURNS JSONB AS $$
+DECLARE
+  v_reclamos JSONB;
+BEGIN
+  SELECT COALESCE(jsonb_agg(row_to_json(r.*)), '[]'::jsonb)
+  INTO v_reclamos
+  FROM (
+    SELECT
+      rec.*,
+      tr.nombre as tipo_reclamo_nombre,
+      tr.icono as tipo_reclamo_icono
+    FROM reclamos rec
+    LEFT JOIN tipos_reclamos tr ON rec.tipo_reclamo_id = tr.id
+    WHERE rec.cliente_id = p_cliente_id
+      AND (p_estado IS NULL OR rec.estado = p_estado)
+    ORDER BY rec.created_at DESC
+  ) r;
+
+  RETURN v_reclamos;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+GRANT EXECUTE ON FUNCTION obtener_reclamos_cliente(UUID, VARCHAR) TO anon;
+GRANT EXECUTE ON FUNCTION obtener_reclamos_cliente(UUID, VARCHAR) TO authenticated;
+
+-- Función para crear reclamo del cliente
+CREATE OR REPLACE FUNCTION crear_reclamo_cliente(
+  p_cliente_id UUID,
+  p_tipo_reclamo_id UUID,
+  p_titulo VARCHAR,
+  p_descripcion TEXT,
+  p_ubicacion TEXT DEFAULT NULL,
+  p_fotos JSONB DEFAULT '[]'
+)
+RETURNS JSONB AS $$
+DECLARE
+  v_reclamo_id UUID;
+  v_prioridad VARCHAR;
+BEGIN
+  -- Obtener prioridad del tipo de reclamo
+  SELECT prioridad INTO v_prioridad
+  FROM tipos_reclamos
+  WHERE id = p_tipo_reclamo_id;
+
+  -- Crear el reclamo
+  INSERT INTO reclamos (
+    cliente_id,
+    tipo_reclamo_id,
+    titulo,
+    descripcion,
+    ubicacion,
+    fotos,
+    prioridad,
+    estado
+  ) VALUES (
+    p_cliente_id,
+    p_tipo_reclamo_id,
+    p_titulo,
+    p_descripcion,
+    p_ubicacion,
+    p_fotos,
+    COALESCE(v_prioridad, 'media'),
+    'pendiente'
+  ) RETURNING id INTO v_reclamo_id;
+
+  RETURN jsonb_build_object(
+    'exito', true,
+    'mensaje', 'Reclamo creado exitosamente',
+    'reclamo_id', v_reclamo_id
+  );
+EXCEPTION WHEN OTHERS THEN
+  RETURN jsonb_build_object(
+    'exito', false,
+    'mensaje', SQLERRM
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+GRANT EXECUTE ON FUNCTION crear_reclamo_cliente(UUID, UUID, VARCHAR, TEXT, TEXT, JSONB) TO anon;
+GRANT EXECUTE ON FUNCTION crear_reclamo_cliente(UUID, UUID, VARCHAR, TEXT, TEXT, JSONB) TO authenticated;
+
+-- Función para obtener tipos de reclamos
+CREATE OR REPLACE FUNCTION obtener_tipos_reclamos()
+RETURNS JSONB AS $$
+BEGIN
+  RETURN (
+    SELECT COALESCE(jsonb_agg(row_to_json(t.*)), '[]'::jsonb)
+    FROM tipos_reclamos t
+    WHERE activo = true
+    ORDER BY nombre
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+GRANT EXECUTE ON FUNCTION obtener_tipos_reclamos() TO anon;
+GRANT EXECUTE ON FUNCTION obtener_tipos_reclamos() TO authenticated;
+
+-- Función para obtener comentarios de un reclamo
+CREATE OR REPLACE FUNCTION obtener_comentarios_reclamo(
+  p_reclamo_id UUID,
+  p_cliente_id UUID
+)
+RETURNS JSONB AS $$
+DECLARE
+  v_comentarios JSONB;
+  v_reclamo_existe BOOLEAN;
+BEGIN
+  -- Verificar que el reclamo pertenece al cliente
+  SELECT EXISTS(
+    SELECT 1 FROM reclamos
+    WHERE id = p_reclamo_id AND cliente_id = p_cliente_id
+  ) INTO v_reclamo_existe;
+
+  IF NOT v_reclamo_existe THEN
+    RETURN '[]'::jsonb;
+  END IF;
+
+  SELECT COALESCE(jsonb_agg(row_to_json(c.*)), '[]'::jsonb)
+  INTO v_comentarios
+  FROM (
+    SELECT *
+    FROM comentarios_reclamos
+    WHERE reclamo_id = p_reclamo_id
+    ORDER BY created_at ASC
+  ) c;
+
+  RETURN v_comentarios;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+GRANT EXECUTE ON FUNCTION obtener_comentarios_reclamo(UUID, UUID) TO anon;
+GRANT EXECUTE ON FUNCTION obtener_comentarios_reclamo(UUID, UUID) TO authenticated;
+
+-- Función para agregar comentario a un reclamo
+CREATE OR REPLACE FUNCTION agregar_comentario_reclamo(
+  p_reclamo_id UUID,
+  p_cliente_id UUID,
+  p_comentario TEXT
+)
+RETURNS JSONB AS $$
+DECLARE
+  v_reclamo_existe BOOLEAN;
+  v_comentario_id UUID;
+BEGIN
+  -- Verificar que el reclamo pertenece al cliente
+  SELECT EXISTS(
+    SELECT 1 FROM reclamos
+    WHERE id = p_reclamo_id AND cliente_id = p_cliente_id
+  ) INTO v_reclamo_existe;
+
+  IF NOT v_reclamo_existe THEN
+    RETURN jsonb_build_object(
+      'exito', false,
+      'mensaje', 'Reclamo no encontrado'
+    );
+  END IF;
+
+  -- Insertar comentario
+  INSERT INTO comentarios_reclamos (
+    reclamo_id,
+    autor_tipo,
+    autor_id,
+    comentario
+  ) VALUES (
+    p_reclamo_id,
+    'cliente',
+    p_cliente_id,
+    p_comentario
+  ) RETURNING id INTO v_comentario_id;
+
+  RETURN jsonb_build_object(
+    'exito', true,
+    'mensaje', 'Comentario agregado exitosamente',
+    'comentario_id', v_comentario_id
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+GRANT EXECUTE ON FUNCTION agregar_comentario_reclamo(UUID, UUID, TEXT) TO anon;
+GRANT EXECUTE ON FUNCTION agregar_comentario_reclamo(UUID, UUID, TEXT) TO authenticated;
+
 -- Función para generar código PIN aleatorio
 CREATE OR REPLACE FUNCTION generar_pin_cliente(p_cliente_id UUID)
 RETURNS VARCHAR AS $$
@@ -393,6 +687,9 @@ BEGIN
   RETURN COALESCE(v_stats, '{}'::jsonb);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+GRANT EXECUTE ON FUNCTION obtener_estadisticas_cliente(UUID) TO anon;
+GRANT EXECUTE ON FUNCTION obtener_estadisticas_cliente(UUID) TO authenticated;
 
 -- ========================================
 -- TRIGGER AUTOMÁTICO DE NOTIFICACIONES

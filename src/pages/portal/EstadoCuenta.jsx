@@ -27,47 +27,45 @@ export default function EstadoCuenta() {
   const cargarFacturas = async () => {
     setLoading(true)
 
-    let query = supabase
-      .from('facturas')
-      .select('*')
-      .eq('cliente_id', cliente.id)
-      .order('fecha_emision', { ascending: false })
-
-    // Filtro por estado
-    if (filtroEstado !== 'todas') {
-      query = query.eq('estado', filtroEstado)
-    }
-
-    // Filtro por período
-    if (filtroPeriodo !== 'todos') {
-      const hoy = new Date()
-      let fechaInicio
-
-      switch (filtroPeriodo) {
-        case 'mes_actual':
-          fechaInicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
-          break
-        case 'ultimos_3_meses':
-          fechaInicio = new Date(hoy.setMonth(hoy.getMonth() - 3))
-          break
-        case 'ultimos_6_meses':
-          fechaInicio = new Date(hoy.setMonth(hoy.getMonth() - 6))
-          break
-        case 'este_año':
-          fechaInicio = new Date(hoy.getFullYear(), 0, 1)
-          break
-      }
-
-      if (fechaInicio) {
-        query = query.gte('fecha_emision', fechaInicio.toISOString())
-      }
-    }
-
-    const { data, error } = await query
+    // Usar RPC para obtener facturas (funciona sin sesión de Supabase Auth)
+    const { data, error } = await supabase.rpc('obtener_facturas_cliente', {
+      p_cliente_id: cliente.id,
+      p_estado: filtroEstado !== 'todas' ? filtroEstado : null,
+      p_limite: 200
+    })
 
     if (!error && data) {
-      setFacturas(data)
-      calcularResumen(data)
+      let facturasFiltradas = data
+
+      // Filtro por período (aplicar en cliente porque RPC no lo maneja)
+      if (filtroPeriodo !== 'todos') {
+        const hoy = new Date()
+        let fechaInicio
+
+        switch (filtroPeriodo) {
+          case 'mes_actual':
+            fechaInicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
+            break
+          case 'ultimos_3_meses':
+            fechaInicio = new Date(new Date().setMonth(new Date().getMonth() - 3))
+            break
+          case 'ultimos_6_meses':
+            fechaInicio = new Date(new Date().setMonth(new Date().getMonth() - 6))
+            break
+          case 'este_año':
+            fechaInicio = new Date(hoy.getFullYear(), 0, 1)
+            break
+        }
+
+        if (fechaInicio) {
+          facturasFiltradas = data.filter(f =>
+            new Date(f.fecha_emision) >= fechaInicio
+          )
+        }
+      }
+
+      setFacturas(facturasFiltradas)
+      calcularResumen(facturasFiltradas)
     }
 
     setLoading(false)

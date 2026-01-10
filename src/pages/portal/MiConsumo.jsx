@@ -31,32 +31,52 @@ export default function MiConsumo() {
     const fechaLimite = new Date()
     fechaLimite.setMonth(fechaLimite.getMonth() - mesesAtras)
 
-    const { data, error } = await supabase
-      .from('lecturas')
-      .select('*')
-      .eq('cliente_id', cliente.id)
-      .gte('fecha_lectura', fechaLimite.toISOString())
-      .order('fecha_lectura', { ascending: true })
+    // Usar RPC para obtener lecturas (funciona sin sesión de Supabase Auth)
+    const { data, error } = await supabase.rpc('obtener_lecturas_cliente', {
+      p_cliente_id: cliente.id,
+      p_limite: 100
+    })
 
     if (!error && data && data.length > 0) {
-      // Calcular consumo para cada lectura
-      const lecturasConConsumo = []
+      // Filtrar por fecha y ordenar ascendente
+      const lecturasFiltradas = data
+        .filter(l => new Date(l.fecha_lectura) >= fechaLimite)
+        .sort((a, b) => new Date(a.fecha_lectura) - new Date(b.fecha_lectura))
 
-      for (let i = 1; i < data.length; i++) {
-        const lecturaAnterior = data[i - 1]
-        const lecturaActual = data[i]
-        const consumo = lecturaActual.lectura - lecturaAnterior.lectura
+      if (lecturasFiltradas.length > 0) {
+        // Calcular consumo para cada lectura
+        const lecturasConConsumo = []
 
-        lecturasConConsumo.push({
-          ...lecturaActual,
-          lectura_anterior: lecturaAnterior.lectura,
-          consumo: consumo >= 0 ? consumo : 0, // Evitar valores negativos
-          fecha: new Date(lecturaActual.fecha_lectura)
+        for (let i = 1; i < lecturasFiltradas.length; i++) {
+          const lecturaAnterior = lecturasFiltradas[i - 1]
+          const lecturaActual = lecturasFiltradas[i]
+          // Usar lectura_actual y lectura_anterior si existen, o calcular diferencia
+          const consumo = lecturaActual.consumo_m3 ||
+            ((lecturaActual.lectura_actual || 0) - (lecturaAnterior.lectura_actual || 0))
+
+          lecturasConConsumo.push({
+            ...lecturaActual,
+            lectura_anterior: lecturaAnterior.lectura_actual || 0,
+            lectura: lecturaActual.lectura_actual || 0,
+            consumo: consumo >= 0 ? consumo : 0,
+            fecha: new Date(lecturaActual.fecha_lectura)
+          })
+        }
+
+        setLecturas(lecturasConConsumo)
+        calcularEstadisticas(lecturasConConsumo)
+      } else {
+        setLecturas([])
+        setEstadisticas({
+          consumo_promedio: 0,
+          consumo_actual: 0,
+          tendencia: 0,
+          consumo_mayor: 0,
+          consumo_menor: 0,
+          mes_mayor_consumo: '',
+          mes_menor_consumo: ''
         })
       }
-
-      setLecturas(lecturasConConsumo)
-      calcularEstadisticas(lecturasConConsumo)
     } else {
       setLecturas([])
       setEstadisticas({

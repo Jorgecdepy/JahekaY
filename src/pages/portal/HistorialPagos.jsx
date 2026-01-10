@@ -27,58 +27,62 @@ export default function HistorialPagos() {
   const cargarPagos = async () => {
     setLoading(true)
 
-    let query = supabase
-      .from('facturas')
-      .select('*')
-      .eq('cliente_id', cliente.id)
-      .eq('estado', 'pagada')
-      .not('fecha_pago', 'is', null)
-      .order('fecha_pago', { ascending: false })
-
-    // Aplicar filtro de período
-    let fechaInicioCalc, fechaFinCalc
-
-    if (filtroPeriodo !== 'todos' && filtroPeriodo !== 'personalizado') {
-      const hoy = new Date()
-
-      switch (filtroPeriodo) {
-        case 'mes_actual':
-          fechaInicioCalc = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
-          fechaFinCalc = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0)
-          break
-        case 'ultimos_3_meses':
-          fechaInicioCalc = new Date(hoy.getFullYear(), hoy.getMonth() - 3, 1)
-          fechaFinCalc = hoy
-          break
-        case 'ultimos_6_meses':
-          fechaInicioCalc = new Date(hoy.getFullYear(), hoy.getMonth() - 6, 1)
-          fechaFinCalc = hoy
-          break
-        case 'este_año':
-          fechaInicioCalc = new Date(hoy.getFullYear(), 0, 1)
-          fechaFinCalc = hoy
-          break
-        case 'año_pasado':
-          fechaInicioCalc = new Date(hoy.getFullYear() - 1, 0, 1)
-          fechaFinCalc = new Date(hoy.getFullYear() - 1, 11, 31)
-          break
-      }
-    } else if (filtroPeriodo === 'personalizado' && fechaInicio && fechaFin) {
-      fechaInicioCalc = new Date(fechaInicio)
-      fechaFinCalc = new Date(fechaFin)
-    }
-
-    if (fechaInicioCalc && fechaFinCalc) {
-      query = query
-        .gte('fecha_pago', fechaInicioCalc.toISOString())
-        .lte('fecha_pago', fechaFinCalc.toISOString())
-    }
-
-    const { data, error } = await query
+    // Usar RPC para obtener facturas pagadas (funciona sin sesión de Supabase Auth)
+    const { data, error } = await supabase.rpc('obtener_facturas_cliente', {
+      p_cliente_id: cliente.id,
+      p_estado: 'pagada',
+      p_limite: 200
+    })
 
     if (!error && data) {
-      setPagos(data)
-      calcularResumen(data)
+      // Filtrar solo las que tienen fecha_pago
+      let pagosFiltrados = data.filter(f => f.fecha_pago)
+
+      // Aplicar filtro de período en el cliente
+      let fechaInicioCalc, fechaFinCalc
+
+      if (filtroPeriodo !== 'todos' && filtroPeriodo !== 'personalizado') {
+        const hoy = new Date()
+
+        switch (filtroPeriodo) {
+          case 'mes_actual':
+            fechaInicioCalc = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
+            fechaFinCalc = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0)
+            break
+          case 'ultimos_3_meses':
+            fechaInicioCalc = new Date(hoy.getFullYear(), hoy.getMonth() - 3, 1)
+            fechaFinCalc = hoy
+            break
+          case 'ultimos_6_meses':
+            fechaInicioCalc = new Date(hoy.getFullYear(), hoy.getMonth() - 6, 1)
+            fechaFinCalc = hoy
+            break
+          case 'este_año':
+            fechaInicioCalc = new Date(hoy.getFullYear(), 0, 1)
+            fechaFinCalc = hoy
+            break
+          case 'año_pasado':
+            fechaInicioCalc = new Date(hoy.getFullYear() - 1, 0, 1)
+            fechaFinCalc = new Date(hoy.getFullYear() - 1, 11, 31)
+            break
+        }
+      } else if (filtroPeriodo === 'personalizado' && fechaInicio && fechaFin) {
+        fechaInicioCalc = new Date(fechaInicio)
+        fechaFinCalc = new Date(fechaFin)
+      }
+
+      if (fechaInicioCalc && fechaFinCalc) {
+        pagosFiltrados = pagosFiltrados.filter(pago => {
+          const fechaPago = new Date(pago.fecha_pago)
+          return fechaPago >= fechaInicioCalc && fechaPago <= fechaFinCalc
+        })
+      }
+
+      // Ordenar por fecha de pago descendente
+      pagosFiltrados.sort((a, b) => new Date(b.fecha_pago) - new Date(a.fecha_pago))
+
+      setPagos(pagosFiltrados)
+      calcularResumen(pagosFiltrados)
     }
 
     setLoading(false)
