@@ -1,0 +1,78 @@
+/* ================================================================
+   OFFLINE INDICATOR - Indicador de estado de conexión
+   ================================================================ */
+
+.offline-indicator {
+  position: fixed;
+  top: calc(var(--header-height, 56px) + var(--safe-area-top, 0px));
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.offline-indicator-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  border-radius: var(--radius-full, 9999px);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Estado offline */
+.offline-indicator.offline .offline-indicator-content {
+  background: var(--danger-color, #ef4444);
+  color: white;
+}
+
+/* Estado online (reconectado) */
+.offline-indicator.online .offline-indicator-content {
+  background: var(--success-color, #10b981);
+  color: white;
+  animation: fadeOut 2s ease-out 1s forwards;
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+.offline-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* Responsive */
+@media (min-width: 1024px) {
+  .offline-indicator {
+    top: calc(var(--header-height, 56px) + 0.5rem);
+  }
+}
+
+/* Accesibilidad */
+@media (prefers-reduced-motion: reduce) {
+  .offline-indicator,
+  .offline-indicator.online .offline-indicator-content {
+    animation: none;
+  }
+}

@@ -1,0 +1,184 @@
+/* ================================================================
+   TOAST NOTIFICATIONS - Sistema de notificaciones
+   ================================================================ */
+
+.toast-container {
+  position: fixed;
+  bottom: calc(var(--bottom-nav-height, 64px) + var(--safe-area-bottom, 0px) + 1rem);
+  left: 1rem;
+  right: 1rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
+/* En desktop, posicionar arriba a la derecha */
+@media (min-width: 1024px) {
+  .toast-container {
+    top: calc(var(--header-height, 56px) + 1rem);
+    bottom: auto;
+    left: auto;
+    right: 1.5rem;
+    width: 360px;
+  }
+}
+
+/* ================================================================
+   TOAST INDIVIDUAL
+   ================================================================ */
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  background: white;
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  pointer-events: auto;
+  animation: toastSlideIn 0.3s ease-out;
+}
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.toast-exit {
+  animation: toastSlideOut 0.2s ease-in forwards;
+}
+
+@keyframes toastSlideOut {
+  to {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+}
+
+/* ================================================================
+   ICONOS Y CONTENIDO
+   ================================================================ */
+
+.toast-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  padding: 4px;
+}
+
+.toast-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.toast-message {
+  flex: 1;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gray-800, #1f2937);
+  line-height: 1.4;
+}
+
+.toast-close {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: var(--gray-100, #f3f4f6);
+  border-radius: var(--radius, 8px);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--gray-500, #6b7280);
+  transition: all 0.2s ease;
+  touch-action: manipulation;
+}
+
+.toast-close:active {
+  transform: scale(0.95);
+  background: var(--gray-200, #e5e7eb);
+}
+
+.toast-close svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ================================================================
+   TIPOS DE TOAST
+   ================================================================ */
+
+/* Success */
+.toast-success {
+  border-left: 4px solid var(--success-color, #10b981);
+}
+
+.toast-success .toast-icon {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success-color, #10b981);
+}
+
+/* Error */
+.toast-error {
+  border-left: 4px solid var(--danger-color, #ef4444);
+}
+
+.toast-error .toast-icon {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger-color, #ef4444);
+}
+
+/* Warning */
+.toast-warning {
+  border-left: 4px solid var(--warning-color, #f59e0b);
+}
+
+.toast-warning .toast-icon {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--warning-color, #f59e0b);
+}
+
+/* Info */
+.toast-info {
+  border-left: 4px solid var(--primary-color, #667eea);
+}
+
+.toast-info .toast-icon {
+  background: rgba(102, 126, 234, 0.1);
+  color: var(--primary-color, #667eea);
+}
+
+/* ================================================================
+   ACCESIBILIDAD
+   ================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .toast,
+  .toast-exit {
+    animation: none;
+  }
+}
+
+/* ================================================================
+   HOVER EN DESKTOP
+   ================================================================ */
+
+@media (min-width: 1024px) {
+  .toast-close:hover {
+    background: var(--gray-200, #e5e7eb);
+    color: var(--gray-700, #374151);
+  }
+}
