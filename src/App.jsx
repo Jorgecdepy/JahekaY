@@ -6,8 +6,14 @@ import Dashboard from './pages/Dashboard'
 import { ClienteAuthProvider, useCliente } from './contexts/ClienteAuthContext'
 import { EmpleadoAuthProvider, useEmpleado } from './contexts/EmpleadoAuthContext'
 import PortalLayout from './layouts/PortalLayout'
+import LectoristaLayout from './layouts/LectoristaLayout'
 import LoginCliente from './pages/portal/LoginCliente'
 import LoginEmpleado from './pages/LoginEmpleado'
+import LoginLectorista from './pages/lectorista/LoginLectorista'
+import DashboardLectorista from './pages/lectorista/DashboardLectorista'
+import CargarLectura from './pages/lectorista/CargarLectura'
+import MisLecturas from './pages/lectorista/MisLecturas'
+import BuscarCliente from './pages/lectorista/BuscarCliente'
 import DashboardCliente from './pages/portal/DashboardCliente'
 import ReclamosCliente from './pages/portal/ReclamosCliente'
 import EstadoCuenta from './pages/portal/EstadoCuenta'
@@ -75,6 +81,38 @@ function ProtectedEmpleadoRoute({ children, requiredModule, requiredPermiso }) {
         </div>
       )
     }
+  }
+
+  return children
+}
+
+// Componente protegido para rutas del lectorista
+function ProtectedLectoristaRoute({ children }) {
+  const { empleado, loading, tienePermiso } = useEmpleado()
+
+  if (loading) {
+    return (
+      <div className="loading">
+        <div className="loading-logo">JahekaY</div>
+        <div className="spinner spinner-lg"></div>
+        <p className="loading-text">Cargando...</p>
+      </div>
+    )
+  }
+
+  if (!empleado) {
+    return <Navigate to="/lectorista/login" />
+  }
+
+  // Verificar permiso de lecturas
+  if (!tienePermiso('lecturas', 'crear')) {
+    return (
+      <div className="access-denied">
+        <h2>Acceso Denegado</h2>
+        <p>No tienes permisos para acceder al portal de lecturas</p>
+        <button onClick={() => window.history.back()}>Volver</button>
+      </div>
+    )
   }
 
   return children
@@ -171,6 +209,32 @@ function App() {
             <Route path="estado-cuenta" element={<EstadoCuenta />} />
             <Route path="historial-pagos" element={<HistorialPagos />} />
             <Route path="mi-consumo" element={<MiConsumo />} />
+          </Route>
+
+          {/* Rutas del Portal del Lectorista */}
+          <Route
+            path="/lectorista/login"
+            element={
+              <EmpleadoAuthProvider>
+                <LoginLectorista />
+              </EmpleadoAuthProvider>
+            }
+          />
+          <Route
+            path="/lectorista"
+            element={
+              <EmpleadoAuthProvider>
+                <ProtectedLectoristaRoute>
+                  <LectoristaLayout />
+                </ProtectedLectoristaRoute>
+              </EmpleadoAuthProvider>
+            }
+          >
+            <Route index element={<Navigate to="/lectorista/dashboard" />} />
+            <Route path="dashboard" element={<DashboardLectorista />} />
+            <Route path="cargar" element={<CargarLectura />} />
+            <Route path="mis-lecturas" element={<MisLecturas />} />
+            <Route path="buscar-cliente" element={<BuscarCliente />} />
           </Route>
 
           {/* Ruta por defecto */}
