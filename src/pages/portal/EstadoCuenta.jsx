@@ -138,10 +138,10 @@ export default function EstadoCuenta() {
   }
 
   const formatearMoneda = (valor) => {
-    return new Intl.NumberFormat('es-DO', {
-      style: 'currency',
-      currency: 'DOP'
-    }).format(valor)
+    return 'Gs. ' + new Intl.NumberFormat('es-PY', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(valor || 0)
   }
 
   const descargarFacturaPDF = async (factura) => {
