@@ -1,0 +1,311 @@
+/* Layout principal del Lectorista */
+.lectorista-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a365d 0%, #2d3748 100%);
+}
+
+/* Header */
+.lectorista-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  height: 60px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.logo-icon {
+  font-size: 1.5rem;
+}
+
+.logo-text {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: white;
+}
+
+.logo-badge {
+  background: #48bb78;
+  color: white;
+  font-size: 0.65rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.user-icon {
+  font-size: 1.5rem;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.user-rol {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.75rem;
+}
+
+.btn-logout {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  font-size: 1.25rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-logout:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Sidebar */
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 60px;
+  bottom: 0;
+  width: 240px;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  z-index: 90;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+
+.sidebar-abierto {
+  transform: translateX(0);
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.25rem;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  transition: all 0.2s;
+  border-left: 3px solid transparent;
+}
+
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.nav-item.active {
+  background: rgba(72, 187, 120, 0.2);
+  color: #48bb78;
+  border-left-color: #48bb78;
+}
+
+.nav-icon {
+  font-size: 1.25rem;
+}
+
+.nav-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.sidebar-footer {
+  padding: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sync-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: rgba(72, 187, 120, 0.1);
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+}
+
+.sync-icon {
+  font-size: 0.75rem;
+}
+
+.sync-text {
+  color: #48bb78;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.btn-logout-sidebar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: rgba(245, 101, 101, 0.1);
+  border: none;
+  border-radius: 8px;
+  color: #fc8181;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-logout-sidebar:hover {
+  background: rgba(245, 101, 101, 0.2);
+}
+
+/* Overlay */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 85;
+}
+
+/* Main Content */
+.lectorista-main {
+  flex: 1;
+  margin-top: 60px;
+  padding: 1rem;
+  padding-bottom: 80px;
+  overflow-y: auto;
+}
+
+/* Bottom Navigation (Móvil) */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-around;
+  background: rgba(26, 54, 93, 0.95);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.5rem 0;
+  z-index: 100;
+}
+
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 1rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  transition: all 0.2s;
+  border-radius: 8px;
+}
+
+.bottom-nav-item.active {
+  color: #48bb78;
+}
+
+.bottom-nav-icon {
+  font-size: 1.25rem;
+}
+
+.bottom-nav-label {
+  font-size: 0.625rem;
+  font-weight: 500;
+}
+
+/* Responsive */
+@media (min-width: 768px) {
+  .sidebar {
+    transform: translateX(0);
+  }
+
+  .lectorista-main {
+    margin-left: 240px;
+    padding-bottom: 1rem;
+  }
+
+  .bottom-nav {
+    display: none;
+  }
+
+  .menu-toggle {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .menu-toggle {
+    display: block;
+  }
+
+  .user-details {
+    display: none;
+  }
+
+  .lectorista-header {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .logo-text {
+    font-size: 1.1rem;
+  }
+}
