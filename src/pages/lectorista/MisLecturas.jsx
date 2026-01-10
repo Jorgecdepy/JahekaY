@@ -21,7 +21,7 @@ export default function MisLecturas() {
     try {
       const { data, error } = await supabase.rpc('obtener_lecturas_lectorista', {
         p_empleado_id: empleado.id,
-        p_filtro: filtro,
+        p_filtro_fecha: filtro,
         p_limite: 100
       })
 
