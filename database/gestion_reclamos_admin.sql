@@ -32,7 +32,7 @@ BEGIN
   SELECT
     r.id,
     r.cliente_id,
-    u.nombre::VARCHAR as cliente_nombre,
+    u.nombre_completo::VARCHAR as cliente_nombre,
     u.direccion as cliente_direccion,
     r.tipo_reclamo_id,
     tr.nombre as tipo_nombre,
@@ -211,7 +211,7 @@ BEGIN
     c.autor_tipo,
     c.autor_id,
     CASE
-      WHEN c.autor_tipo = 'cliente' THEN u.nombre::VARCHAR
+      WHEN c.autor_tipo = 'cliente' THEN u.nombre_completo::VARCHAR
       WHEN c.autor_tipo = 'admin' THEN e.nombre_completo::VARCHAR
       ELSE 'Desconocido'
     END as autor_nombre,
