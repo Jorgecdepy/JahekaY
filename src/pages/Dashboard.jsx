@@ -9,6 +9,7 @@ import CajaDiaria from './CajaDiaria'
 import Configuracion from './Configuracion'
 import Reportes from './Reportes'
 import RolesPermisos from './RolesPermisos'
+import Reclamos from './Reclamos'
 import './Dashboard.css'
 
 function Dashboard() {
@@ -290,6 +291,8 @@ function Dashboard() {
         return <CajaDiaria />
       case 'reportes':
         return <Reportes />
+      case 'reclamos':
+        return <Reclamos />
       case 'roles':
         return <RolesPermisos />
       case 'configuracion':
@@ -439,6 +442,24 @@ function Dashboard() {
                 </svg>
               </span>
               Reportes
+            </button>
+          )}
+
+          {/* Reclamos - solo si tiene acceso */}
+          {tieneAcceso('reclamos') && (
+            <button
+              className={activeSection === 'reclamos' ? 'nav-item active' : 'nav-item'}
+              onClick={() => setActiveSection('reclamos')}
+            >
+              <span className="nav-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <circle cx="12" cy="12" r="2"></circle>
+                  <path d="M12 18v-4"></path>
+                </svg>
+              </span>
+              Reclamos
             </button>
           )}
 
