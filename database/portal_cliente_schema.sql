@@ -235,26 +235,28 @@ LEFT JOIN tipos_reclamos tr ON r.tipo_reclamo_id = tr.id
 LEFT JOIN empleados e ON r.asignado_a = e.id;
 
 -- Vista de estadísticas del cliente
+-- NOTA: Usa usuario_id para compatibilidad con facturacion_automatica_schema
+-- Si tu base de datos usa cliente_id, reemplaza usuario_id por cliente_id
 CREATE OR REPLACE VIEW vista_estadisticas_cliente AS
 SELECT
   u.id as cliente_id,
   u.nombre_completo,
   u.numero_medidor,
   -- Facturas
-  (SELECT COUNT(*) FROM facturas WHERE cliente_id = u.id) as total_facturas,
-  (SELECT COUNT(*) FROM facturas WHERE cliente_id = u.id AND estado = 'pagada') as facturas_pagadas,
-  (SELECT COUNT(*) FROM facturas WHERE cliente_id = u.id AND estado = 'pendiente') as facturas_pendientes,
-  (SELECT COUNT(*) FROM facturas WHERE cliente_id = u.id AND estado = 'vencida') as facturas_vencidas,
-  (SELECT SUM(total) FROM facturas WHERE cliente_id = u.id AND estado IN ('pendiente', 'vencida')) as saldo_pendiente,
-  (SELECT SUM(total) FROM facturas WHERE cliente_id = u.id AND estado = 'pagada') as total_pagado,
+  (SELECT COUNT(*) FROM facturas f WHERE f.usuario_id = u.id) as total_facturas,
+  (SELECT COUNT(*) FROM facturas f WHERE f.usuario_id = u.id AND f.estado = 'pagada') as facturas_pagadas,
+  (SELECT COUNT(*) FROM facturas f WHERE f.usuario_id = u.id AND f.estado = 'pendiente') as facturas_pendientes,
+  (SELECT COUNT(*) FROM facturas f WHERE f.usuario_id = u.id AND f.estado = 'vencida') as facturas_vencidas,
+  (SELECT COALESCE(SUM(total), 0) FROM facturas f WHERE f.usuario_id = u.id AND f.estado IN ('pendiente', 'vencida')) as saldo_pendiente,
+  (SELECT COALESCE(SUM(total), 0) FROM facturas f WHERE f.usuario_id = u.id AND f.estado = 'pagada') as total_pagado,
   -- Lecturas
-  (SELECT COUNT(*) FROM lecturas WHERE cliente_id = u.id) as total_lecturas,
-  (SELECT AVG(consumo_m3) FROM lecturas WHERE cliente_id = u.id) as consumo_promedio,
-  (SELECT MAX(consumo_m3) FROM lecturas WHERE cliente_id = u.id) as consumo_maximo,
-  (SELECT MIN(consumo_m3) FROM lecturas WHERE cliente_id = u.id) as consumo_minimo,
+  (SELECT COUNT(*) FROM lecturas l WHERE l.usuario_id = u.id) as total_lecturas,
+  (SELECT COALESCE(AVG(consumo_m3), 0) FROM lecturas l WHERE l.usuario_id = u.id) as consumo_promedio,
+  (SELECT COALESCE(MAX(consumo_m3), 0) FROM lecturas l WHERE l.usuario_id = u.id) as consumo_maximo,
+  (SELECT COALESCE(MIN(consumo_m3), 0) FROM lecturas l WHERE l.usuario_id = u.id) as consumo_minimo,
   -- Última lectura
-  (SELECT fecha_lectura FROM lecturas WHERE cliente_id = u.id ORDER BY fecha_lectura DESC LIMIT 1) as ultima_lectura_fecha,
-  (SELECT consumo_m3 FROM lecturas WHERE cliente_id = u.id ORDER BY fecha_lectura DESC LIMIT 1) as ultima_lectura_consumo,
+  (SELECT fecha_lectura FROM lecturas l WHERE l.usuario_id = u.id ORDER BY fecha_lectura DESC LIMIT 1) as ultima_lectura_fecha,
+  (SELECT consumo_m3 FROM lecturas l WHERE l.usuario_id = u.id ORDER BY fecha_lectura DESC LIMIT 1) as ultima_lectura_consumo,
   -- Reclamos
   (SELECT COUNT(*) FROM reclamos WHERE cliente_id = u.id) as total_reclamos,
   (SELECT COUNT(*) FROM reclamos WHERE cliente_id = u.id AND estado = 'pendiente') as reclamos_pendientes,
@@ -342,6 +344,7 @@ GRANT EXECUTE ON FUNCTION autenticar_cliente(VARCHAR, VARCHAR) TO authenticated;
 -- ========================================
 
 -- Función para obtener facturas del cliente
+-- NOTA: Usa usuario_id para compatibilidad con facturacion_automatica_schema
 CREATE OR REPLACE FUNCTION obtener_facturas_cliente(
   p_cliente_id UUID,
   p_estado VARCHAR DEFAULT NULL,
@@ -356,7 +359,7 @@ BEGIN
   FROM (
     SELECT *
     FROM facturas
-    WHERE cliente_id = p_cliente_id
+    WHERE usuario_id = p_cliente_id
       AND (p_estado IS NULL OR estado = p_estado)
     ORDER BY fecha_emision DESC
     LIMIT p_limite
@@ -370,6 +373,7 @@ GRANT EXECUTE ON FUNCTION obtener_facturas_cliente(UUID, VARCHAR, INT) TO anon;
 GRANT EXECUTE ON FUNCTION obtener_facturas_cliente(UUID, VARCHAR, INT) TO authenticated;
 
 -- Función para obtener lecturas del cliente
+-- NOTA: Usa usuario_id para compatibilidad con facturacion_automatica_schema
 CREATE OR REPLACE FUNCTION obtener_lecturas_cliente(
   p_cliente_id UUID,
   p_limite INT DEFAULT 50
@@ -383,7 +387,7 @@ BEGIN
   FROM (
     SELECT *
     FROM lecturas
-    WHERE cliente_id = p_cliente_id
+    WHERE usuario_id = p_cliente_id
     ORDER BY fecha_lectura DESC
     LIMIT p_limite
   ) l;
@@ -696,11 +700,12 @@ GRANT EXECUTE ON FUNCTION obtener_estadisticas_cliente(UUID) TO authenticated;
 -- ========================================
 
 -- Notificar al cliente cuando se crea una nueva factura
+-- NOTA: Usa usuario_id para compatibilidad con facturacion_automatica_schema
 CREATE OR REPLACE FUNCTION notificar_nueva_factura()
 RETURNS TRIGGER AS $$
 BEGIN
   PERFORM crear_notificacion_cliente(
-    NEW.cliente_id,
+    NEW.usuario_id,
     'factura',
     'Nueva Factura Generada',
     'Se ha generado tu factura del mes ' || TO_CHAR(NEW.fecha_emision, 'Month YYYY') ||
@@ -718,12 +723,13 @@ CREATE TRIGGER trigger_notificar_nueva_factura
   EXECUTE FUNCTION notificar_nueva_factura();
 
 -- Notificar cuando una factura es pagada
+-- NOTA: Usa usuario_id para compatibilidad con facturacion_automatica_schema
 CREATE OR REPLACE FUNCTION notificar_pago_factura()
 RETURNS TRIGGER AS $$
 BEGIN
   IF NEW.estado = 'pagada' AND OLD.estado != 'pagada' THEN
     PERFORM crear_notificacion_cliente(
-      NEW.cliente_id,
+      NEW.usuario_id,
       'pago',
       'Pago Registrado',
       'Tu pago de ' || TO_CHAR(NEW.total, 'FM999G999G999') || ' Gs. ha sido registrado exitosamente.',
