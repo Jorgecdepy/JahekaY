@@ -29,11 +29,8 @@ export default function ReclamosCliente() {
   }, [cliente.id, filtroEstado])
 
   const cargarTiposReclamos = async () => {
-    const { data, error } = await supabase
-      .from('tipos_reclamos')
-      .select('*')
-      .eq('activo', true)
-      .order('nombre')
+    // Usar RPC para obtener tipos de reclamos (funciona sin sesión de Supabase Auth)
+    const { data, error } = await supabase.rpc('obtener_tipos_reclamos')
 
     if (!error && data) {
       setTiposReclamos(data)
@@ -43,17 +40,11 @@ export default function ReclamosCliente() {
   const cargarReclamos = async () => {
     setLoading(true)
 
-    let query = supabase
-      .from('vista_reclamos_completa')
-      .select('*')
-      .eq('cliente_id', cliente.id)
-      .order('fecha_creacion', { ascending: false })
-
-    if (filtroEstado !== 'todos') {
-      query = query.eq('estado', filtroEstado)
-    }
-
-    const { data, error } = await query
+    // Usar RPC para obtener reclamos (funciona sin sesión de Supabase Auth)
+    const { data, error } = await supabase.rpc('obtener_reclamos_cliente', {
+      p_cliente_id: cliente.id,
+      p_estado: filtroEstado !== 'todos' ? filtroEstado : null
+    })
 
     if (!error && data) {
       setReclamos(data)
@@ -63,11 +54,11 @@ export default function ReclamosCliente() {
   }
 
   const cargarComentarios = async (reclamoId) => {
-    const { data, error } = await supabase
-      .from('comentarios_reclamos')
-      .select('*')
-      .eq('reclamo_id', reclamoId)
-      .order('fecha_comentario', { ascending: true })
+    // Usar RPC para obtener comentarios (funciona sin sesión de Supabase Auth)
+    const { data, error } = await supabase.rpc('obtener_comentarios_reclamo', {
+      p_reclamo_id: reclamoId,
+      p_cliente_id: cliente.id
+    })
 
     if (!error && data) {
       setComentarios(data)
@@ -79,19 +70,21 @@ export default function ReclamosCliente() {
     setEnviando(true)
 
     try {
-      const { data, error } = await supabase
-        .from('reclamos')
-        .insert([{
-          cliente_id: cliente.id,
-          tipo_reclamo_id: formData.tipo_reclamo_id,
-          descripcion: formData.descripcion,
-          ubicacion: formData.ubicacion || cliente.direccion,
-          foto_url: formData.foto_url || null,
-          estado: 'pendiente'
-        }])
-        .select()
+      // Usar RPC para crear reclamo (funciona sin sesión de Supabase Auth)
+      const { data, error } = await supabase.rpc('crear_reclamo_cliente', {
+        p_cliente_id: cliente.id,
+        p_tipo_reclamo_id: formData.tipo_reclamo_id,
+        p_titulo: tiposReclamos.find(t => t.id === formData.tipo_reclamo_id)?.nombre || 'Reclamo',
+        p_descripcion: formData.descripcion,
+        p_ubicacion: formData.ubicacion || cliente.direccion,
+        p_fotos: formData.foto_url ? [formData.foto_url] : []
+      })
 
       if (error) throw error
+
+      if (!data.exito) {
+        throw new Error(data.mensaje || 'Error al crear reclamo')
+      }
 
       // Limpiar formulario
       setFormData({
@@ -139,16 +132,18 @@ export default function ReclamosCliente() {
     setEnviando(true)
 
     try {
-      const { error } = await supabase
-        .from('comentarios_reclamos')
-        .insert([{
-          reclamo_id: reclamoSeleccionado.id,
-          usuario_id: cliente.id,
-          comentario: nuevoComentario,
-          es_cliente: true
-        }])
+      // Usar RPC para agregar comentario (funciona sin sesión de Supabase Auth)
+      const { data, error } = await supabase.rpc('agregar_comentario_reclamo', {
+        p_reclamo_id: reclamoSeleccionado.id,
+        p_cliente_id: cliente.id,
+        p_comentario: nuevoComentario
+      })
 
       if (error) throw error
+
+      if (!data.exito) {
+        throw new Error(data.mensaje || 'Error al agregar comentario')
+      }
 
       setNuevoComentario('')
       await cargarComentarios(reclamoSeleccionado.id)

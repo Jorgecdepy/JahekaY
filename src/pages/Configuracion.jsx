@@ -329,8 +329,7 @@ function Configuracion() {
   const cargarClientes = async () => {
     const { data, error } = await supabase
       .from('usuarios')
-      .select('id, nombre_completo, numero_medidor, direccion')
-      .eq('activo', true)
+      .select('id, nombre_completo, numero_medidor, direccion, codigo_pin, activo')
       .order('nombre_completo', { ascending: true })
 
     if (error) {
