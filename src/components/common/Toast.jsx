@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext, useCallback } from 'react'
+import { useState, createContext, useContext, useCallback, useRef, useEffect } from 'react'
 import './Toast.css'
 
 // Contexto para toast global
@@ -9,23 +9,40 @@ const ToastContext = createContext(null)
  */
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([])
+  const timersRef = useRef(new Map())
 
+  // Función para remover toast
+  const removeToast = useCallback((id) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id))
+    // Limpiar timer si existe
+    if (timersRef.current.has(id)) {
+      clearTimeout(timersRef.current.get(id))
+      timersRef.current.delete(id)
+    }
+  }, [])
+
+  // Función para agregar toast
   const addToast = useCallback((message, type = 'info', duration = 4000) => {
     const id = Date.now() + Math.random()
 
     setToasts((prev) => [...prev, { id, message, type }])
 
     if (duration > 0) {
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         removeToast(id)
       }, duration)
+      timersRef.current.set(id, timer)
     }
 
     return id
-  }, [])
+  }, [removeToast])
 
-  const removeToast = useCallback((id) => {
-    setToasts((prev) => prev.filter((toast) => toast.id !== id))
+  // Limpiar timers al desmontar
+  useEffect(() => {
+    return () => {
+      timersRef.current.forEach((timer) => clearTimeout(timer))
+      timersRef.current.clear()
+    }
   }, [])
 
   const toast = {

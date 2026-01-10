@@ -120,7 +120,7 @@ self.addEventListener('fetch', (event) => {
 async function handleNetworkOnly(request) {
   try {
     return await fetch(request)
-  } catch (error) {
+  } catch {
     // Respuesta offline para API
     return new Response(
       JSON.stringify({
@@ -153,7 +153,7 @@ async function handleCacheFirst(request) {
       cache.put(request, response.clone())
     }
     return response
-  } catch (error) {
+  } catch {
     return new Response('Recurso no disponible', { status: 404 })
   }
 }
@@ -169,7 +169,7 @@ async function handleNetworkFirst(request) {
     }
 
     return response
-  } catch (error) {
+  } catch {
     // Intentar desde caché
     const cachedResponse = await caches.match(request)
 
@@ -195,7 +195,7 @@ async function fetchAndCache(request) {
       const cache = await caches.open(RUNTIME_CACHE)
       cache.put(request, response.clone())
     }
-  } catch (error) {
+  } catch {
     // Ignorar errores de red
   }
 }
@@ -376,7 +376,7 @@ self.addEventListener('push', (event) => {
   if (event.data) {
     try {
       data = { ...data, ...event.data.json() }
-    } catch (e) {
+    } catch {
       data.body = event.data.text()
     }
   }
@@ -417,7 +417,7 @@ self.addEventListener('notificationclick', (event) => {
   const urlToOpen = event.notification.data?.url || '/portal-cliente/dashboard'
 
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true })
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true })
       .then((clientList) => {
         // Buscar ventana existente
         for (const client of clientList) {
@@ -427,8 +427,8 @@ self.addEventListener('notificationclick', (event) => {
           }
         }
         // Abrir nueva ventana
-        if (clients.openWindow) {
-          return clients.openWindow(urlToOpen)
+        if (self.clients.openWindow) {
+          return self.clients.openWindow(urlToOpen)
         }
       })
   )

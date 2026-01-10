@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { usePWA } from '../../hooks/usePWA'
 import './OfflineIndicator.css'
 
@@ -9,21 +9,21 @@ import './OfflineIndicator.css'
 export function OfflineIndicator() {
   const { isOnline } = usePWA()
   const [showReconnected, setShowReconnected] = useState(false)
-  const [wasOffline, setWasOffline] = useState(false)
+  const wasOfflineRef = useRef(false)
 
   useEffect(() => {
     if (!isOnline) {
-      setWasOffline(true)
-    } else if (wasOffline) {
+      wasOfflineRef.current = true
+    } else if (wasOfflineRef.current) {
       // Mostrar mensaje de reconexión
       setShowReconnected(true)
       const timer = setTimeout(() => {
         setShowReconnected(false)
-        setWasOffline(false)
+        wasOfflineRef.current = false
       }, 3000)
       return () => clearTimeout(timer)
     }
-  }, [isOnline, wasOffline])
+  }, [isOnline])
 
   if (isOnline && !showReconnected) {
     return null
