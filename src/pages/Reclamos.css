@@ -1,146 +1,169 @@
+/* ===== RECLAMOS KANBAN - APPLE-STYLE ===== */
+
 .reclamos-admin-container {
-  padding: 1.5rem;
+  padding: var(--space-6);
   height: 100%;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  animation: fadeIn 0.4s var(--ease-smooth);
 }
 
+/* Page Header */
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 2px solid var(--gray-200);
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--gray-200);
 }
 
 .page-header h2 {
   margin: 0;
-  font-size: 1.75rem;
-  font-weight: 700;
+  font-size: 1.875rem;
+  font-weight: 800;
   color: var(--gray-900);
+  letter-spacing: -0.025em;
 }
 
 .page-subtitle {
-  margin: 0.25rem 0 0 0;
-  font-size: 0.875rem;
-  color: var(--gray-600);
+  margin: var(--space-1) 0 0 0;
+  font-size: 0.9375rem;
+  color: var(--gray-500);
 }
 
 .btn-refresh {
-  padding: 0.625rem 1.25rem;
-  background: var(--primary);
+  padding: var(--space-3) var(--space-5);
+  background: var(--primary-gradient);
   color: white;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-xl);
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all var(--transition-normal);
+  transition: all var(--transition);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
+  box-shadow: var(--shadow-primary);
 }
 
 .btn-refresh:hover {
-  background: var(--primary-dark);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px -8px rgba(37, 99, 235, 0.45);
 }
 
-/* Filtros */
+.btn-refresh:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Filtros Section */
 .filtros-section {
   display: flex;
-  gap: 1rem;
+  gap: var(--space-4);
   align-items: center;
-  margin-bottom: 1.5rem;
-  padding: 1rem;
+  margin-bottom: var(--space-6);
+  padding: var(--space-4) var(--space-5);
   background: white;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-2xl);
   box-shadow: var(--shadow-sm);
+  border: 1px solid var(--gray-100);
   flex-wrap: wrap;
 }
 
 .filtro-group {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 .filtro-group label {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--gray-700);
+  color: var(--gray-600);
+  white-space: nowrap;
 }
 
 .filtro-select {
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--gray-300);
-  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  padding-right: 2.5rem;
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-lg);
   font-size: 0.875rem;
   background: white;
   cursor: pointer;
-  transition: all var(--transition-normal);
+  transition: all var(--transition);
+  min-width: 140px;
+}
+
+.filtro-select:hover {
+  border-color: var(--gray-300);
 }
 
 .filtro-select:focus {
   outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px var(--primary-50);
 }
 
 .stats-mini {
   display: flex;
-  gap: 1rem;
+  gap: var(--space-5);
   margin-left: auto;
 }
 
 .stat-mini {
   font-size: 0.875rem;
   color: var(--gray-600);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 .stat-mini strong {
-  color: var(--primary);
-  font-size: 1rem;
+  color: var(--primary-600);
+  font-size: 1.125rem;
+  font-weight: 800;
 }
 
-/* Tablero Kanban */
+/* Kanban Board */
 .kanban-board {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1.5rem;
+  gap: var(--space-5);
   flex: 1;
   overflow-x: auto;
-  padding-bottom: 1rem;
+  padding-bottom: var(--space-4);
+  min-height: 0;
 }
 
-/* Columna del Kanban */
+/* Kanban Column */
 .kanban-column {
-  background: var(--gray-50);
-  border-radius: var(--radius-lg);
+  background: var(--gray-100);
+  border-radius: var(--radius-2xl);
   display: flex;
   flex-direction: column;
   min-height: 0;
-  box-shadow: var(--shadow-sm);
+  overflow: hidden;
 }
 
 .column-header {
-  padding: 1rem;
+  padding: var(--space-4) var(--space-5);
   border-top: 4px solid;
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
   background: white;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .column-title {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 .column-icon {
@@ -148,75 +171,105 @@
 }
 
 .column-label {
-  font-size: 1rem;
+  font-size: 0.9375rem;
   font-weight: 700;
   color: var(--gray-800);
+  letter-spacing: -0.01em;
 }
 
 .column-count {
   background: var(--gray-200);
   color: var(--gray-700);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   padding: 0.25rem 0.625rem;
   border-radius: var(--radius-full);
+  min-width: 28px;
+  text-align: center;
 }
 
 .column-content {
   flex: 1;
   overflow-y: auto;
-  padding: 0.5rem;
+  padding: var(--space-3);
   min-height: 200px;
 }
 
-/* Zona donde se puede soltar */
+.column-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.column-content::-webkit-scrollbar-thumb {
+  background: var(--gray-300);
+  border-radius: 2px;
+}
+
+/* Droppable Zone */
 .droppable-zone {
   min-height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 
-/* Tarjeta de reclamo */
+/* Reclamo Card */
 .reclamo-kanban-card {
   background: white;
-  border-radius: var(--radius-md);
-  padding: 1rem;
+  border-radius: var(--radius-xl);
+  padding: var(--space-4);
   box-shadow: var(--shadow-sm);
   cursor: grab;
-  transition: all var(--transition-normal);
+  transition: all var(--transition);
   border: 2px solid transparent;
+  position: relative;
+}
+
+.reclamo-kanban-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-xl);
+  box-shadow: 0 0 0 0 var(--primary-200);
+  transition: box-shadow var(--transition);
+  pointer-events: none;
 }
 
 .reclamo-kanban-card:hover {
+  transform: translateY(-3px);
   box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
-  border-color: var(--primary);
+  border-color: var(--primary-200);
+}
+
+.reclamo-kanban-card:hover::after {
+  box-shadow: 0 0 0 3px var(--primary-100);
 }
 
 .reclamo-kanban-card:active {
   cursor: grabbing;
+  transform: translateY(-1px) scale(1.02);
 }
 
 .reclamo-kanban-card.dragging {
-  opacity: 0.5;
-  box-shadow: var(--shadow-lg);
+  opacity: 0.6;
+  box-shadow: var(--shadow-xl);
+  transform: rotate(2deg) scale(1.02);
 }
 
+/* Card Header */
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.75rem;
-  gap: 0.5rem;
+  margin-bottom: var(--space-3);
+  gap: var(--space-2);
 }
 
 .tipo-badge {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
+  gap: var(--space-2);
   background: var(--gray-100);
-  padding: 0.25rem 0.625rem;
+  padding: 0.375rem 0.75rem;
   border-radius: var(--radius-full);
   font-size: 0.75rem;
   font-weight: 600;
@@ -237,100 +290,126 @@
 }
 
 .prioridad-badge {
-  padding: 0.25rem 0.5rem;
+  padding: 0.25rem 0.625rem;
   border-radius: var(--radius-full);
   font-size: 0.625rem;
-  font-weight: 700;
+  font-weight: 800;
   color: white;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
   flex-shrink: 0;
 }
 
+/* Card Content */
 .card-titulo {
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 var(--space-2) 0;
   font-size: 0.9375rem;
   font-weight: 700;
   color: var(--gray-900);
-  line-height: 1.3;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
 }
 
 .card-descripcion {
-  margin: 0 0 0.75rem 0;
+  margin: 0 0 var(--space-3) 0;
   font-size: 0.8125rem;
-  color: var(--gray-600);
+  color: var(--gray-500);
   line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .card-info {
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
-  margin-bottom: 0.75rem;
-  padding: 0.625rem;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
   background: var(--gray-50);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-lg);
 }
 
 .info-item {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
+  gap: var(--space-2);
   font-size: 0.75rem;
 }
 
 .info-label {
   font-weight: 600;
-  color: var(--gray-700);
+  color: var(--gray-600);
+  flex-shrink: 0;
 }
 
 .info-value {
-  color: var(--gray-600);
+  color: var(--gray-500);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .card-asignado {
-  margin-bottom: 0.75rem;
-  padding: 0.5rem;
-  background: var(--primary-light, #e8eaf6);
-  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--primary-50);
+  border-radius: var(--radius-lg);
   font-size: 0.75rem;
-  color: var(--primary-dark, #3f51b5);
+  color: var(--primary-700);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 }
 
+/* Card Footer */
 .card-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--gray-200);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--gray-100);
 }
 
 .card-fecha {
   font-size: 0.6875rem;
-  color: var(--gray-500);
+  color: var(--gray-400);
+  font-weight: 500;
 }
 
 .card-comentarios {
   font-size: 0.75rem;
   color: var(--gray-600);
   font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
 }
 
+/* Empty Column */
 .empty-column {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100%;
   min-height: 150px;
   border: 2px dashed var(--gray-300);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-xl);
   color: var(--gray-400);
   font-size: 0.875rem;
   font-weight: 500;
   text-align: center;
-  padding: 1rem;
+  padding: var(--space-4);
+  transition: all var(--transition);
+}
+
+.empty-column:hover {
+  border-color: var(--primary-300);
+  color: var(--primary-500);
+  background: var(--primary-50);
 }
 
 /* Loading */
@@ -340,14 +419,14 @@
   align-items: center;
   justify-content: center;
   height: 100%;
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
 .spinner {
-  width: 3rem;
-  height: 3rem;
+  width: 48px;
+  height: 48px;
   border: 4px solid var(--gray-200);
-  border-top-color: var(--primary);
+  border-top-color: var(--primary-500);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -358,6 +437,14 @@
   }
 }
 
+/* Drag Overlay */
+.reclamo-kanban-card.dragging {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  transform: rotate(3deg) scale(1.03);
+  background: white;
+  z-index: 100;
+}
+
 /* Responsive */
 @media (max-width: 1400px) {
   .kanban-board {
@@ -366,6 +453,10 @@
 }
 
 @media (max-width: 768px) {
+  .reclamos-admin-container {
+    padding: var(--space-4);
+  }
+
   .kanban-board {
     grid-template-columns: 1fr;
   }
@@ -373,7 +464,16 @@
   .page-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 1rem;
+    gap: var(--space-4);
+  }
+
+  .page-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .btn-refresh {
+    width: 100%;
+    justify-content: center;
   }
 
   .filtros-section {
@@ -381,15 +481,40 @@
     align-items: stretch;
   }
 
+  .filtro-group {
+    width: 100%;
+  }
+
+  .filtro-select {
+    flex: 1;
+    width: 100%;
+  }
+
   .stats-mini {
     margin-left: 0;
-    justify-content: center;
+    justify-content: space-around;
+    width: 100%;
+  }
+
+  .kanban-column {
+    max-height: 500px;
   }
 }
 
-/* Drag Overlay */
-.reclamo-kanban-card.dragging {
-  box-shadow: var(--shadow-xl);
-  transform: rotate(3deg);
-  background: white;
+@media (max-width: 480px) {
+  .reclamos-admin-container {
+    padding: var(--space-3);
+  }
+
+  .column-header {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .reclamo-kanban-card {
+    padding: var(--space-3);
+  }
+
+  .card-titulo {
+    font-size: 0.875rem;
+  }
 }
