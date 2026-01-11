@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
-import { useTecnico } from '../contexts/TecnicoAuthContext'
+import { useEmpleado } from '../contexts/EmpleadoAuthContext'
 import './TecnicoLayout.css'
 
 export default function TecnicoLayout() {
-  const { tecnico, logout } = useTecnico()
+  const { empleado, logout } = useEmpleado()
+  // Usar empleado como tecnico para mantener compatibilidad
+  const tecnico = empleado
   const navigate = useNavigate()
   const [menuMovilAbierto, setMenuMovilAbierto] = useState(false)
 

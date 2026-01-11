@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, Polyline, Polygon, useMap } from 'react-leaflet'
-import { useTecnico } from '../../contexts/TecnicoAuthContext'
+import { useEmpleado } from '../../contexts/EmpleadoAuthContext'
 import { supabase } from '../../services/supabase'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
@@ -46,7 +46,7 @@ function MapController({ bounds }) {
 }
 
 export default function MapaZonas() {
-  const { tecnico } = useTecnico()
+  const { empleado: tecnico } = useEmpleado()
   const [reclamos, setReclamos] = useState([])
   const [zonas, setZonas] = useState([])
   const [canerias, setCanerias] = useState([])

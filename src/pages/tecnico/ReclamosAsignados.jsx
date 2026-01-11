@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
-import { useTecnico } from '../../contexts/TecnicoAuthContext'
+import { useEmpleado } from '../../contexts/EmpleadoAuthContext'
 import { supabase } from '../../services/supabase'
 import './ReclamosAsignados.css'
 
 export default function ReclamosAsignados() {
-  const { tecnico } = useTecnico()
+  const { empleado: tecnico } = useEmpleado()
   const [reclamos, setReclamos] = useState([])
   const [loading, setLoading] = useState(true)
   const [filtroEstado, setFiltroEstado] = useState('todos')
