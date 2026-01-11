@@ -172,6 +172,8 @@
   font-size: 1rem;
   transition: all 0.3s ease;
   font-family: inherit;
+  background-color: #ffffff;
+  color: #1f2937;
 }
 
 .input-wrapper input:focus {
