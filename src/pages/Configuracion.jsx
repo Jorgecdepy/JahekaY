@@ -435,63 +435,126 @@ function Configuracion() {
         mostrarMensaje('Empleado actualizado exitosamente', 'success')
       } else {
         // Crear nuevo empleado con credenciales de acceso
+        console.log('Iniciando creación de empleado...', formDataEmpleado.email)
 
-        // 1. Crear usuario en Supabase Auth
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: formDataEmpleado.email,
-          password: formDataEmpleado.password,
-          options: {
-            data: {
+        try {
+          // Intentar usar Edge Function primero (si está desplegada)
+          const { data: funcionData, error: funcionError } = await supabase.functions.invoke('crear-empleado', {
+            body: {
+              email: formDataEmpleado.email,
+              password: formDataEmpleado.password,
               nombre_completo: formDataEmpleado.nombre_completo,
-              tipo: 'empleado'
+              telefono: formDataEmpleado.telefono,
+              direccion: formDataEmpleado.direccion,
+              rol_id: formDataEmpleado.rol_id,
+              fecha_contratacion: formDataEmpleado.fecha_contratacion,
+              salario: formDataEmpleado.salario,
+              notas: formDataEmpleado.notas
             }
+          })
+
+          console.log('Respuesta de Edge Function:', { funcionData, funcionError })
+
+          if (funcionError && funcionError.message?.includes('not found')) {
+            // Edge Function no está desplegada, usar método alternativo
+            console.warn('Edge Function no disponible, usando método alternativo')
+            throw new Error('USAR_METODO_ALTERNATIVO')
           }
-        })
 
-        if (authError) {
-          if (authError.message.includes('already registered')) {
-            throw new Error('Este email ya está registrado en el sistema')
+          if (funcionError) {
+            throw new Error(funcionError.message || 'Error al crear empleado')
           }
-          throw authError
+
+          if (funcionData?.error) {
+            throw new Error(funcionData.error)
+          }
+
+          if (!funcionData?.success) {
+            throw new Error('No se pudo crear el empleado')
+          }
+
+          console.log('Empleado creado exitosamente vía Edge Function')
+
+          // Mostrar credenciales generadas
+          setCredencialesGeneradas({
+            nombre: formDataEmpleado.nombre_completo,
+            email: formDataEmpleado.email,
+            password: formDataEmpleado.password
+          })
+          setIsModalEmpleadoOpen(false)
+          setIsModalCredencialesOpen(true)
+          mostrarMensaje('Empleado creado exitosamente', 'success')
+
+        } catch (edgeFunctionError) {
+          // Si la Edge Function falla o no está disponible, usar método directo
+          if (edgeFunctionError.message === 'USAR_METODO_ALTERNATIVO' || edgeFunctionError.message?.includes('not found')) {
+            console.log('Usando método directo de auth.signUp()')
+
+            // 1. Crear usuario en Supabase Auth (método directo)
+            const { data: authData, error: authError } = await supabase.auth.signUp({
+              email: formDataEmpleado.email,
+              password: formDataEmpleado.password,
+              options: {
+                data: {
+                  nombre_completo: formDataEmpleado.nombre_completo,
+                  tipo: 'empleado'
+                }
+              }
+            })
+
+            if (authError) {
+              if (authError.message.includes('already registered')) {
+                throw new Error('Este email ya está registrado en el sistema')
+              }
+              throw authError
+            }
+
+            if (!authData.user) {
+              throw new Error('No se pudo crear el usuario de autenticación')
+            }
+
+            console.log('Usuario de auth creado:', authData.user.id)
+
+            // 2. Crear el registro del empleado
+            const empleadoData = {
+              nombre_completo: formDataEmpleado.nombre_completo,
+              email: formDataEmpleado.email,
+              telefono: formDataEmpleado.telefono,
+              direccion: formDataEmpleado.direccion,
+              rol_id: formDataEmpleado.rol_id,
+              fecha_contratacion: formDataEmpleado.fecha_contratacion,
+              salario: formDataEmpleado.salario ? parseFloat(formDataEmpleado.salario) : null,
+              notas: formDataEmpleado.notas,
+              activo: true,
+              usuario_supabase_id: authData.user.id
+            }
+
+            const { error: empleadoError } = await supabase
+              .from('empleados')
+              .insert([empleadoData])
+
+            if (empleadoError) {
+              console.error('Error al crear empleado:', empleadoError)
+              throw new Error(`Error al crear empleado: ${empleadoError.message}`)
+            }
+
+            console.log('Empleado creado exitosamente (método directo)')
+
+            // Mostrar credenciales con advertencia sobre confirmación de email
+            setCredencialesGeneradas({
+              nombre: formDataEmpleado.nombre_completo,
+              email: formDataEmpleado.email,
+              password: formDataEmpleado.password,
+              requiereConfirmacion: true // Flag para mostrar advertencia
+            })
+            setIsModalEmpleadoOpen(false)
+            setIsModalCredencialesOpen(true)
+            mostrarMensaje('Empleado creado. IMPORTANTE: Debe confirmar su email antes de poder iniciar sesión.', 'warning')
+          } else {
+            // Error diferente, propagar
+            throw edgeFunctionError
+          }
         }
-
-        if (!authData.user) {
-          throw new Error('No se pudo crear el usuario de autenticación')
-        }
-
-        // 2. Crear el registro del empleado con el ID de auth
-        const empleadoData = {
-          nombre_completo: formDataEmpleado.nombre_completo,
-          email: formDataEmpleado.email,
-          telefono: formDataEmpleado.telefono,
-          direccion: formDataEmpleado.direccion,
-          rol_id: formDataEmpleado.rol_id,
-          fecha_contratacion: formDataEmpleado.fecha_contratacion,
-          salario: formDataEmpleado.salario ? parseFloat(formDataEmpleado.salario) : null,
-          notas: formDataEmpleado.notas,
-          activo: true,
-          usuario_supabase_id: authData.user.id
-        }
-
-        const { error: empleadoError } = await supabase
-          .from('empleados')
-          .insert([empleadoData])
-
-        if (empleadoError) {
-          // Si falla la creación del empleado, intentar eliminar el usuario auth creado
-          console.error('Error al crear empleado, el usuario auth fue creado pero el empleado no:', empleadoError)
-          throw empleadoError
-        }
-
-        // 3. Mostrar credenciales generadas
-        setCredencialesGeneradas({
-          nombre: formDataEmpleado.nombre_completo,
-          email: formDataEmpleado.email,
-          password: formDataEmpleado.password
-        })
-        setIsModalEmpleadoOpen(false)
-        setIsModalCredencialesOpen(true)
-        mostrarMensaje('Empleado creado exitosamente', 'success')
       }
 
       cargarEmpleados()
@@ -1925,8 +1988,27 @@ function Configuracion() {
             </div>
           </div>
 
+          {credencialesGeneradas?.requiereConfirmacion && (
+            <div className="alert alert-error" style={{ marginBottom: '1rem', background: '#fef2f2', borderColor: '#fecaca' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              <div>
+                <strong>Requiere confirmación de email</strong>
+                <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.875rem' }}>
+                  El empleado debe confirmar su email antes de poder iniciar sesión. Se ha enviado un email de confirmación a <strong>{credencialesGeneradas.email}</strong>
+                </p>
+                <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.875rem' }}>
+                  <strong>Para evitar esto en el futuro:</strong> Despliega la Edge Function siguiendo las instrucciones en <code>DEPLOY_EMPLEADOS.md</code>
+                </p>
+              </div>
+            </div>
+          )}
+
           <p style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '1.5rem' }}>
-            El empleado podrá iniciar sesión en <strong>/empleado/login</strong> usando estas credenciales.
+            El empleado podrá iniciar sesión en <strong>/empleado/login</strong> usando estas credenciales{credencialesGeneradas?.requiereConfirmacion ? ' (después de confirmar su email)' : ''}.
           </p>
 
           <div className="form-actions">
