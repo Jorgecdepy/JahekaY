@@ -160,15 +160,22 @@
 
 .modal-body input,
 .modal-body select,
-.modal-body textarea {
+.modal-body textarea,
+.modal-body .form-container input,
+.modal-body .form-container select,
+.modal-body .form-container textarea,
+.modal-body .form-group input,
+.modal-body .form-group select,
+.modal-body .form-group textarea {
   width: 100%;
   padding: var(--space-3) var(--space-4);
   border: 1.5px solid var(--gray-200);
   border-radius: var(--radius-lg);
   font-size: 0.9375rem;
   transition: all var(--transition);
-  background: white;
-  color: var(--gray-800);
+  background: white !important;
+  color: #1f2937 !important;
+  -webkit-text-fill-color: #1f2937 !important;
 }
 
 .modal-body input:hover,
