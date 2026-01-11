@@ -1,6 +1,13 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { supabase } from '../services/supabase'
 import './FormularioFactura.css'
+
+// Función para calcular fecha de vencimiento (15 días después)
+const calcularFechaVencimiento = () => {
+  const fecha = new Date()
+  fecha.setDate(fecha.getDate() + 15)
+  return fecha.toISOString().split('T')[0]
+}
 
 function FormularioFactura({ onSuccess, onCancel }) {
   const [loading, setLoading] = useState(false)
@@ -9,12 +16,16 @@ function FormularioFactura({ onSuccess, onCancel }) {
   const [lecturasSinFactura, setLecturasSinFactura] = useState([])
   const [tarifas, setTarifas] = useState([])
   const [lecturaSeleccionada, setLecturaSeleccionada] = useState(null)
+
+  const fechaEmisionInicial = useMemo(() => new Date().toISOString().split('T')[0], [])
+  const fechaVencimientoInicial = useMemo(() => calcularFechaVencimiento(), [])
+
   const [formData, setFormData] = useState({
     lectura_id: '',
     descuento: 0,
     mora: 0,
-    fecha_emision: new Date().toISOString().split('T')[0],
-    fecha_vencimiento: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    fecha_emision: fechaEmisionInicial,
+    fecha_vencimiento: fechaVencimientoInicial
   })
   const [calculo, setCalculo] = useState({
     consumo_m3: 0,
@@ -25,11 +36,7 @@ function FormularioFactura({ onSuccess, onCancel }) {
     total: 0
   })
 
-  useEffect(() => {
-    cargarDatos()
-  }, [])
-
-  const cargarDatos = async () => {
+  const cargarDatos = useCallback(async () => {
     setLoadingData(true)
 
     const { data: lecturasData, error: lecturasError } = await supabase
@@ -66,7 +73,11 @@ function FormularioFactura({ onSuccess, onCancel }) {
     else setTarifas(tarifasData || [])
 
     setLoadingData(false)
-  }
+  }, [])
+
+  useEffect(() => {
+    cargarDatos()
+  }, [cargarDatos])
 
   const calcularMontoConsumo = (consumo) => {
     let montoTotal = 0

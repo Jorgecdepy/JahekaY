@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useCliente } from '../../contexts/ClienteAuthContext'
 import { supabase } from '../../services/supabase'
 import jsPDF from 'jspdf'
@@ -20,11 +20,34 @@ export default function HistorialPagos() {
     ultimo_pago: null
   })
 
-  useEffect(() => {
-    cargarPagos()
-  }, [cliente.id, filtroPeriodo, fechaInicio, fechaFin])
+  const calcularResumen = useCallback((pagos) => {
+    if (pagos.length === 0) {
+      setResumen({
+        total_pagos: 0,
+        monto_total: 0,
+        promedio_mensual: 0,
+        ultimo_pago: null
+      })
+      return
+    }
 
-  const cargarPagos = async () => {
+    const montoTotal = pagos.reduce((acc, pago) => acc + (parseFloat(pago.total) || 0), 0)
+    const mesesUnicos = [...new Set(pagos.map(p => {
+      const fecha = new Date(p.fecha_pago)
+      return `${fecha.getFullYear()}-${fecha.getMonth()}`
+    }))]
+    const promedioMensual = mesesUnicos.length > 0 ? montoTotal / mesesUnicos.length : 0
+    const pagosOrdenados = [...pagos].sort((a, b) => new Date(b.fecha_pago) - new Date(a.fecha_pago))
+
+    setResumen({
+      total_pagos: pagos.length,
+      monto_total: montoTotal,
+      promedio_mensual: promedioMensual,
+      ultimo_pago: pagosOrdenados[0] || null
+    })
+  }, [])
+
+  const cargarPagos = useCallback(async () => {
     setLoading(true)
 
     // Usar RPC para obtener facturas pagadas (funciona sin sesión de Supabase Auth)
@@ -86,39 +109,12 @@ export default function HistorialPagos() {
     }
 
     setLoading(false)
-  }
+  }, [cliente?.id, filtroPeriodo, fechaInicio, fechaFin, calcularResumen])
 
-  const calcularResumen = (pagos) => {
-    if (pagos.length === 0) {
-      setResumen({
-        total_pagos: 0,
-        monto_total: 0,
-        promedio_mensual: 0,
-        ultimo_pago: null
-      })
-      return
-    }
-
-    const montoTotal = pagos.reduce((sum, pago) => sum + pago.total, 0)
-    const ultimoPago = pagos[0] // Ya está ordenado desc por fecha_pago
-
-    // Calcular promedio mensual basado en el período
-    let mesesEnPeriodo = 1
-    if (pagos.length > 1) {
-      const fechaInicioPeriodo = new Date(pagos[pagos.length - 1].fecha_pago)
-      const fechaFinPeriodo = new Date(pagos[0].fecha_pago)
-      const diffMeses = (fechaFinPeriodo.getFullYear() - fechaInicioPeriodo.getFullYear()) * 12 +
-                        (fechaFinPeriodo.getMonth() - fechaInicioPeriodo.getMonth()) + 1
-      mesesEnPeriodo = diffMeses || 1
-    }
-
-    setResumen({
-      total_pagos: pagos.length,
-      monto_total: montoTotal,
-      promedio_mensual: montoTotal / mesesEnPeriodo,
-      ultimo_pago: ultimoPago
-    })
-  }
+  useEffect(() => {
+    if (!cliente?.id) return
+    cargarPagos()
+  }, [cliente?.id, filtroPeriodo, fechaInicio, fechaFin, cargarPagos])
 
   const formatearFecha = (fecha) => {
     return new Date(fecha).toLocaleDateString('es-ES', {
@@ -129,7 +125,7 @@ export default function HistorialPagos() {
   }
 
   const formatearFechaCompleta = (fecha) => {
-    return new Date(fecha).toLocaleDateString('es-ES', {
+    return new Date(fecha).toLocaleString('es-ES', {
       day: '2-digit',
       month: 'long',
       year: 'numeric',

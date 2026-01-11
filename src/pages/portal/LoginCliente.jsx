@@ -28,12 +28,14 @@ function LoginCliente() {
 
       if (error) throw error
 
-      if (data.exito) {
+      if (data && data.exito) {
         // Guardar sesión
         login(data.cliente)
         navigate('/portal-cliente/dashboard')
-      } else {
+      } else if (data) {
         setError(data.mensaje || 'Error al iniciar sesión')
+      } else {
+        setError('Error al iniciar sesión. Respuesta inválida del servidor.')
       }
     } catch (error) {
       console.error('Error:', error)

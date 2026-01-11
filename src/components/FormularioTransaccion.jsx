@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../services/supabase'
 import './FormularioTransaccion.css'
 
@@ -18,13 +18,7 @@ function FormularioTransaccion({ tipo, cajaId, categorias, onSuccess, onCancel }
     factura_relacionada: ''
   })
 
-  useEffect(() => {
-    if (tipo === 'ingreso') {
-      cargarClientesYFacturas()
-    }
-  }, [tipo])
-
-  const cargarClientesYFacturas = async () => {
+  const cargarClientesYFacturas = useCallback(async () => {
     // Cargar clientes activos
     const { data: clientesData } = await supabase
       .from('usuarios')
@@ -49,7 +43,13 @@ function FormularioTransaccion({ tipo, cajaId, categorias, onSuccess, onCancel }
       .order('fecha_emision', { ascending: false })
 
     setFacturasPendientes(facturasData || [])
-  }
+  }, [])
+
+  useEffect(() => {
+    if (tipo === 'ingreso') {
+      cargarClientesYFacturas()
+    }
+  }, [tipo, cargarClientesYFacturas])
 
   const handleChange = (e) => {
     const { name, value } = e.target
