@@ -47,11 +47,20 @@ export const EmpleadoAuthProvider = ({ children }) => {
 
   const cargarDatosEmpleado = async (usuarioId) => {
     try {
-      // Cargar datos del empleado
+      // Obtener el email del usuario autenticado
+      const { data: { user } } = await supabase.auth.getUser()
+
+      if (!user || !user.email) {
+        console.error('No se pudo obtener el email del usuario')
+        setLoading(false)
+        return
+      }
+
+      // Cargar datos del empleado usando el email (más confiable)
       const { data: empleadoData, error: empleadoError } = await supabase
         .from('vista_empleados_roles')
         .select('*')
-        .eq('usuario_supabase_id', usuarioId)
+        .eq('email', user.email)
         .eq('activo', true)
         .single()
 
@@ -66,18 +75,17 @@ export const EmpleadoAuthProvider = ({ children }) => {
 
       setEmpleado(empleadoData)
 
-      // Cargar rol y permisos si tiene rol asignado
-      if (empleadoData.rol_id) {
-        const { data: rolData, error: rolError } = await supabase
-          .from('roles')
-          .select('*')
-          .eq('id', empleadoData.rol_id)
-          .single()
-
-        if (!rolError && rolData) {
-          setRol(rolData)
-          setPermisos(rolData.permisos || {})
+      // Los datos del rol ya vienen en la vista (más eficiente)
+      // Usar los datos de la vista primero
+      if (empleadoData.rol_id || empleadoData.rol_nombre) {
+        const rolDesdeVista = {
+          id: empleadoData.rol_id,
+          nombre: empleadoData.rol_nombre,
+          descripcion: empleadoData.rol_descripcion,
+          permisos: empleadoData.permisos || {}
         }
+        setRol(rolDesdeVista)
+        setPermisos(empleadoData.permisos || {})
       }
 
       setLoading(false)
