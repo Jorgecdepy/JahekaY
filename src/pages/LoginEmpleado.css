@@ -172,8 +172,20 @@
   font-size: 1rem;
   transition: all 0.3s ease;
   font-family: inherit;
-  background-color: #ffffff;
-  color: #1f2937;
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+  -webkit-text-fill-color: #1f2937 !important;
+}
+
+/* Fix para autocompletado de Chrome/navegadores */
+.input-wrapper input:-webkit-autofill,
+.input-wrapper input:-webkit-autofill:hover,
+.input-wrapper input:-webkit-autofill:focus,
+.input-wrapper input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #ffffff inset !important;
+  -webkit-text-fill-color: #1f2937 !important;
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
 }
 
 .input-wrapper input:focus {
@@ -184,6 +196,7 @@
 
 .input-wrapper input::placeholder {
   color: #9ca3af;
+  -webkit-text-fill-color: #9ca3af;
 }
 
 /* Error message */
