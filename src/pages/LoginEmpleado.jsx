@@ -1,18 +1,73 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useEmpleado } from '../contexts/EmpleadoAuthContext'
 import './LoginEmpleado.css'
 
+// Mapeo de roles a rutas de destino
+const RUTAS_POR_ROL = {
+  'Administrador': '/empleado/dashboard',
+  'Gerente': '/empleado/dashboard',
+  'Supervisor': '/empleado/dashboard',
+  'Operador': '/empleado/dashboard',
+  'Cajero': '/empleado/dashboard',
+  'Lectorista': '/lectorista/dashboard',
+  'Técnico': '/tecnico/dashboard',
+  'Tecnico': '/tecnico/dashboard', // Sin tilde por si acaso
+}
+
+// Iconos por rol para mostrar en el mensaje de bienvenida
+const ICONOS_ROL = {
+  'Administrador': '👔',
+  'Gerente': '📊',
+  'Supervisor': '📋',
+  'Operador': '💻',
+  'Cajero': '💰',
+  'Lectorista': '📝',
+  'Técnico': '🔧',
+  'Tecnico': '🔧',
+}
+
 export default function LoginEmpleado() {
   const navigate = useNavigate()
-  const { login } = useEmpleado()
+  const { login, empleado, rol, isAuthenticated, loading: authLoading } = useEmpleado()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [loginExitoso, setLoginExitoso] = useState(false)
 
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   })
+
+  // Redirigir si ya está autenticado
+  useEffect(() => {
+    if (isAuthenticated && empleado && rol) {
+      const rolNombre = rol.nombre || empleado.rol_nombre
+      const rutaDestino = obtenerRutaPorRol(rolNombre)
+      navigate(rutaDestino)
+    }
+  }, [isAuthenticated, empleado, rol, navigate])
+
+  const obtenerRutaPorRol = (rolNombre) => {
+    // Buscar la ruta correspondiente al rol
+    const ruta = RUTAS_POR_ROL[rolNombre]
+    if (ruta) return ruta
+
+    // Si no se encuentra el rol exacto, buscar coincidencias parciales
+    const rolLower = rolNombre?.toLowerCase() || ''
+    if (rolLower.includes('admin') || rolLower.includes('gerente')) {
+      return '/empleado/dashboard'
+    }
+    if (rolLower.includes('lector')) {
+      return '/lectorista/dashboard'
+    }
+    if (rolLower.includes('tecnic') || rolLower.includes('técnic')) {
+      return '/tecnico/dashboard'
+    }
+
+    // Por defecto, ir al dashboard de empleados
+    return '/empleado/dashboard'
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -23,7 +78,8 @@ export default function LoginEmpleado() {
       const result = await login(formData.email, formData.password)
 
       if (result.success) {
-        navigate('/empleado/dashboard')
+        setLoginExitoso(true)
+        // La redirección se manejará en el useEffect cuando se carguen los datos del empleado
       } else {
         setError(result.error || 'Email o contraseña incorrectos')
       }
@@ -42,6 +98,51 @@ export default function LoginEmpleado() {
     })
   }
 
+  // Mostrar loading mientras se verifica la sesión
+  if (authLoading) {
+    return (
+      <div className="login-empleado-container">
+        <div className="login-circles">
+          <div className="circle circle-1"></div>
+          <div className="circle circle-2"></div>
+          <div className="circle circle-3"></div>
+        </div>
+        <div className="login-card">
+          <div className="login-loading">
+            <div className="spinner-large"></div>
+            <p>Verificando sesión...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Mostrar mensaje de bienvenida mientras se redirige
+  if (loginExitoso && empleado) {
+    const rolNombre = rol?.nombre || empleado.rol_nombre || 'Empleado'
+    const icono = ICONOS_ROL[rolNombre] || '👤'
+
+    return (
+      <div className="login-empleado-container">
+        <div className="login-circles">
+          <div className="circle circle-1"></div>
+          <div className="circle circle-2"></div>
+          <div className="circle circle-3"></div>
+        </div>
+        <div className="login-card">
+          <div className="login-success">
+            <div className="success-icon">{icono}</div>
+            <h2>Bienvenido/a</h2>
+            <p className="success-name">{empleado.nombre_completo}</p>
+            <p className="success-rol">{rolNombre}</p>
+            <div className="spinner-small"></div>
+            <p className="success-redirect">Redirigiendo a tu panel...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="login-empleado-container">
       <div className="login-circles">
@@ -58,7 +159,17 @@ export default function LoginEmpleado() {
             </svg>
           </div>
           <h1>JahekaY</h1>
-          <p>Portal de Empleados</p>
+          <p>Sistema de Gestión</p>
+        </div>
+
+        <div className="login-roles-info">
+          <div className="roles-grid">
+            <span title="Administrador">👔</span>
+            <span title="Lectorista">📝</span>
+            <span title="Técnico">🔧</span>
+            <span title="Cajero">💰</span>
+          </div>
+          <p>Acceso unificado para todo el personal</p>
         </div>
 
         <form onSubmit={handleSubmit} className="login-form">
@@ -121,7 +232,7 @@ export default function LoginEmpleado() {
             {loading ? (
               <>
                 <span className="spinner-small"></span>
-                Iniciando sesión...
+                Verificando credenciales...
               </>
             ) : (
               <>

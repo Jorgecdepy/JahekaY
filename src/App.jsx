@@ -1,18 +1,14 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { supabase } from './services/supabase'
-import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import { ClienteAuthProvider, useCliente } from './contexts/ClienteAuthContext'
 import { EmpleadoAuthProvider, useEmpleado } from './contexts/EmpleadoAuthContext'
-import { TecnicoAuthProvider, useTecnico } from './contexts/TecnicoAuthContext'
 import PortalLayout from './layouts/PortalLayout'
 import LectoristaLayout from './layouts/LectoristaLayout'
 import TecnicoLayout from './layouts/TecnicoLayout'
 import LoginCliente from './pages/portal/LoginCliente'
 import LoginEmpleado from './pages/LoginEmpleado'
-import LoginLectorista from './pages/lectorista/LoginLectorista'
-import LoginTecnico from './pages/tecnico/LoginTecnico'
 import DashboardLectorista from './pages/lectorista/DashboardLectorista'
 import DashboardTecnico from './pages/tecnico/DashboardTecnico'
 import CargarLectura from './pages/lectorista/CargarLectura'
@@ -46,7 +42,7 @@ function ProtectedPortalRoute({ children }) {
   return isAuthenticated ? children : <Navigate to="/portal-cliente/login" />
 }
 
-// Componente protegido para rutas de empleados
+// Componente protegido para rutas de empleados (admin, operadores, cajeros)
 function ProtectedEmpleadoRoute({ children, requiredModule, requiredPermiso }) {
   const { empleado, loading, tienePermiso, tieneAccesoModulo } = useEmpleado()
 
@@ -61,7 +57,7 @@ function ProtectedEmpleadoRoute({ children, requiredModule, requiredPermiso }) {
   }
 
   if (!empleado) {
-    return <Navigate to="/empleado/login" />
+    return <Navigate to="/login" />
   }
 
   // Si se requiere un permiso específico, verificarlo
@@ -108,7 +104,7 @@ function ProtectedLectoristaRoute({ children }) {
   }
 
   if (!empleado) {
-    return <Navigate to="/lectorista/login" />
+    return <Navigate to="/login" />
   }
 
   // Verificar permiso de lecturas
@@ -125,9 +121,9 @@ function ProtectedLectoristaRoute({ children }) {
   return children
 }
 
-// Componente protegido para rutas del técnico
+// Componente protegido para rutas del técnico (usa EmpleadoAuthContext)
 function ProtectedTecnicoRoute({ children }) {
-  const { tecnico, loading } = useTecnico()
+  const { empleado, rol, loading } = useEmpleado()
 
   if (loading) {
     return (
@@ -139,8 +135,23 @@ function ProtectedTecnicoRoute({ children }) {
     )
   }
 
-  if (!tecnico) {
-    return <Navigate to="/tecnico/login" />
+  if (!empleado) {
+    return <Navigate to="/login" />
+  }
+
+  // Verificar que sea técnico
+  const rolNombre = rol?.nombre || empleado.rol_nombre || ''
+  const esTecnico = rolNombre.toLowerCase().includes('tecnic') ||
+                    rolNombre.toLowerCase().includes('técnic')
+
+  if (!esTecnico) {
+    return (
+      <div className="access-denied">
+        <h2>Acceso Denegado</h2>
+        <p>Solo los técnicos pueden acceder a este portal</p>
+        <button onClick={() => window.history.back()}>Volver</button>
+      </div>
+    )
   }
 
   return children
@@ -182,22 +193,35 @@ function App() {
         <OfflineIndicator />
 
         <Routes>
-          {/* Rutas Administrativas */}
+          {/* ============================================
+              LOGIN UNIFICADO DE EMPLEADOS
+              Todas las rutas de login de empleados redirigen aquí
+              ============================================ */}
           <Route
             path="/login"
-            element={!session ? <Login /> : <Navigate to="/dashboard" />}
-          />
-          <Route
-            path="/dashboard"
-            element={session ? <Dashboard /> : <Navigate to="/login" />}
-          />
-
-          {/* Rutas de Empleados */}
-          <Route
-            path="/empleado/login"
             element={
               <EmpleadoAuthProvider>
                 <LoginEmpleado />
+              </EmpleadoAuthProvider>
+            }
+          />
+
+          {/* Redirecciones de logins antiguos al login unificado */}
+          <Route path="/empleado/login" element={<Navigate to="/login" replace />} />
+          <Route path="/lectorista/login" element={<Navigate to="/login" replace />} />
+          <Route path="/tecnico/login" element={<Navigate to="/login" replace />} />
+
+          {/* ============================================
+              RUTAS DEL PANEL ADMINISTRATIVO
+              Para: Admin, Gerente, Supervisor, Operador, Cajero
+              ============================================ */}
+          <Route
+            path="/dashboard"
+            element={
+              <EmpleadoAuthProvider>
+                <ProtectedEmpleadoRoute>
+                  <Dashboard />
+                </ProtectedEmpleadoRoute>
               </EmpleadoAuthProvider>
             }
           />
@@ -212,7 +236,9 @@ function App() {
             }
           />
 
-          {/* Rutas del Portal del Cliente */}
+          {/* ============================================
+              PORTAL DEL CLIENTE (Login separado)
+              ============================================ */}
           <Route
             path="/portal-cliente/login"
             element={
@@ -239,15 +265,10 @@ function App() {
             <Route path="mi-consumo" element={<MiConsumo />} />
           </Route>
 
-          {/* Rutas del Portal del Lectorista */}
-          <Route
-            path="/lectorista/login"
-            element={
-              <EmpleadoAuthProvider>
-                <LoginLectorista />
-              </EmpleadoAuthProvider>
-            }
-          />
+          {/* ============================================
+              PORTAL DEL LECTORISTA
+              Acceso mediante login unificado
+              ============================================ */}
           <Route
             path="/lectorista"
             element={
@@ -265,23 +286,18 @@ function App() {
             <Route path="buscar-cliente" element={<BuscarCliente />} />
           </Route>
 
-          {/* Rutas del Portal del Técnico */}
-          <Route
-            path="/tecnico/login"
-            element={
-              <TecnicoAuthProvider>
-                <LoginTecnico />
-              </TecnicoAuthProvider>
-            }
-          />
+          {/* ============================================
+              PORTAL DEL TÉCNICO
+              Acceso mediante login unificado
+              ============================================ */}
           <Route
             path="/tecnico"
             element={
-              <TecnicoAuthProvider>
+              <EmpleadoAuthProvider>
                 <ProtectedTecnicoRoute>
                   <TecnicoLayout />
                 </ProtectedTecnicoRoute>
-              </TecnicoAuthProvider>
+              </EmpleadoAuthProvider>
             }
           >
             <Route index element={<Navigate to="/tecnico/dashboard" />} />
@@ -291,11 +307,16 @@ function App() {
             <Route path="mapa" element={<MapaZonas />} />
           </Route>
 
-          {/* Ruta por defecto */}
+          {/* ============================================
+              RUTA POR DEFECTO
+              ============================================ */}
           <Route
             path="/"
-            element={<Navigate to={session ? "/dashboard" : "/login"} />}
+            element={<Navigate to="/login" />}
           />
+
+          {/* Cualquier otra ruta redirige al login */}
+          <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       </Router>
     </ToastProvider>

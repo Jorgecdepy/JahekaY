@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useTecnico } from '../../contexts/TecnicoAuthContext'
+import { useEmpleado } from '../../contexts/EmpleadoAuthContext'
 import { supabase } from '../../services/supabase'
 import './DashboardTecnico.css'
 
 export default function DashboardTecnico() {
-  const { tecnico } = useTecnico()
+  const { empleado: tecnico } = useEmpleado()
   const navigate = useNavigate()
   const [stats, setStats] = useState({
     total_asignados: 0,

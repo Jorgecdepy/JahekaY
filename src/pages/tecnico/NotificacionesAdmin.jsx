@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
-import { useTecnico } from '../../contexts/TecnicoAuthContext'
+import { useEmpleado } from '../../contexts/EmpleadoAuthContext'
 import { supabase } from '../../services/supabase'
 import './NotificacionesAdmin.css'
 
 export default function NotificacionesAdmin() {
-  const { tecnico } = useTecnico()
+  const { empleado: tecnico } = useEmpleado()
   const [notificaciones, setNotificaciones] = useState([])
   const [reclamos, setReclamos] = useState([])
   const [loading, setLoading] = useState(true)
