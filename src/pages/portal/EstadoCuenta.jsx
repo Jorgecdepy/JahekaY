@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useCliente } from '../../contexts/ClienteAuthContext'
 import { supabase } from '../../services/supabase'
 import jsPDF from 'jspdf'
@@ -20,11 +20,32 @@ export default function EstadoCuenta() {
     facturas_vencidas: 0
   })
 
-  useEffect(() => {
-    cargarFacturas()
-  }, [cliente.id, filtroEstado, filtroPeriodo])
+  const calcularResumen = useCallback((facturas) => {
+    const hoy = new Date()
 
-  const cargarFacturas = async () => {
+    const resumenCalc = facturas.reduce(
+      (acc, factura) => {
+        acc.total_facturas++
+        const total = parseFloat(factura.total) || 0
+
+        if (factura.estado === 'pendiente') {
+          acc.total_pendiente += total
+          if (new Date(factura.fecha_vencimiento) < hoy) {
+            acc.facturas_vencidas++
+          }
+        } else if (factura.estado === 'pagada') {
+          acc.total_pagado += total
+        }
+
+        return acc
+      },
+      { total_facturas: 0, total_pendiente: 0, total_pagado: 0, facturas_vencidas: 0 }
+    )
+
+    setResumen(resumenCalc)
+  }, [])
+
+  const cargarFacturas = useCallback(async () => {
     setLoading(true)
 
     // Usar RPC para obtener facturas (funciona sin sesión de Supabase Auth)
@@ -47,10 +68,10 @@ export default function EstadoCuenta() {
             fechaInicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
             break
           case 'ultimos_3_meses':
-            fechaInicio = new Date(new Date().setMonth(new Date().getMonth() - 3))
+            fechaInicio = new Date(hoy.getFullYear(), hoy.getMonth() - 3, 1)
             break
           case 'ultimos_6_meses':
-            fechaInicio = new Date(new Date().setMonth(new Date().getMonth() - 6))
+            fechaInicio = new Date(hoy.getFullYear(), hoy.getMonth() - 6, 1)
             break
           case 'este_año':
             fechaInicio = new Date(hoy.getFullYear(), 0, 1)
@@ -69,35 +90,12 @@ export default function EstadoCuenta() {
     }
 
     setLoading(false)
-  }
+  }, [cliente?.id, filtroEstado, filtroPeriodo, calcularResumen])
 
-  const calcularResumen = (facturas) => {
-    const hoy = new Date()
-
-    const resumen = facturas.reduce(
-      (acc, factura) => {
-        acc.total_facturas++
-
-        if (factura.estado === 'pendiente' || factura.estado === 'vencida') {
-          acc.total_pendiente += factura.total
-        }
-
-        if (factura.estado === 'pagada') {
-          acc.total_pagado += factura.total
-        }
-
-        if (factura.estado === 'vencida' ||
-            (factura.estado === 'pendiente' && new Date(factura.fecha_vencimiento) < hoy)) {
-          acc.facturas_vencidas++
-        }
-
-        return acc
-      },
-      { total_facturas: 0, total_pendiente: 0, total_pagado: 0, facturas_vencidas: 0 }
-    )
-
-    setResumen(resumen)
-  }
+  useEffect(() => {
+    if (!cliente?.id) return
+    cargarFacturas()
+  }, [cliente?.id, filtroEstado, filtroPeriodo, cargarFacturas])
 
   const getEstadoColor = (estado) => {
     switch (estado) {

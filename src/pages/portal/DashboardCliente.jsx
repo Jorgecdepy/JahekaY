@@ -19,7 +19,7 @@ function DashboardCliente() {
       return
     }
     cargarDatos()
-  }, [cliente])
+  }, [cliente, navigate])
 
   const cargarDatos = async () => {
     setLoading(true)
@@ -92,7 +92,7 @@ function DashboardCliente() {
       p_cliente_id: cliente.id
     })
 
-    cargarNotificaciones()
+    await cargarNotificaciones()
   }
 
   const handleLogout = () => {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useCliente } from '../../contexts/ClienteAuthContext'
 import { supabase } from '../../services/supabase'
 import './ReclamosCliente.css'
@@ -23,21 +23,16 @@ export default function ReclamosCliente() {
   const [nuevoComentario, setNuevoComentario] = useState('')
   const [enviando, setEnviando] = useState(false)
 
-  useEffect(() => {
-    cargarTiposReclamos()
-    cargarReclamos()
-  }, [cliente.id, filtroEstado])
-
-  const cargarTiposReclamos = async () => {
+  const cargarTiposReclamos = useCallback(async () => {
     // Usar RPC para obtener tipos de reclamos (funciona sin sesión de Supabase Auth)
     const { data, error } = await supabase.rpc('obtener_tipos_reclamos')
 
     if (!error && data) {
       setTiposReclamos(data)
     }
-  }
+  }, [])
 
-  const cargarReclamos = async () => {
+  const cargarReclamos = useCallback(async () => {
     setLoading(true)
 
     // Usar RPC para obtener reclamos (funciona sin sesión de Supabase Auth)
@@ -51,7 +46,13 @@ export default function ReclamosCliente() {
     }
 
     setLoading(false)
-  }
+  }, [cliente?.id, filtroEstado])
+
+  useEffect(() => {
+    if (!cliente?.id) return
+    cargarTiposReclamos()
+    cargarReclamos()
+  }, [cliente?.id, filtroEstado, cargarTiposReclamos, cargarReclamos])
 
   const cargarComentarios = async (reclamoId) => {
     // Usar RPC para obtener comentarios (funciona sin sesión de Supabase Auth)

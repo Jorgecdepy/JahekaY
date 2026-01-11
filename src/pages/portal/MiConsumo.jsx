@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useCliente } from '../../contexts/ClienteAuthContext'
 import { supabase } from '../../services/supabase'
 import './MiConsumo.css'
@@ -20,11 +20,46 @@ export default function MiConsumo() {
     mes_menor_consumo: ''
   })
 
-  useEffect(() => {
-    cargarLecturas()
-  }, [cliente.id, periodo])
+  const calcularEstadisticas = useCallback((lecturas) => {
+    if (lecturas.length === 0) {
+      setEstadisticas({
+        consumo_promedio: 0,
+        consumo_actual: 0,
+        tendencia: 0,
+        consumo_mayor: 0,
+        consumo_menor: 0,
+        mes_mayor_consumo: '',
+        mes_menor_consumo: ''
+      })
+      return
+    }
 
-  const cargarLecturas = async () => {
+    const consumos = lecturas.map(l => l.consumo)
+    const consumoPromedio = consumos.reduce((a, b) => a + b, 0) / consumos.length
+    const consumoActual = consumos[consumos.length - 1] || 0
+    const consumoAnterior = consumos.length > 1 ? consumos[consumos.length - 2] : consumoActual
+    const tendencia = consumoAnterior > 0 ? ((consumoActual - consumoAnterior) / consumoAnterior) * 100 : 0
+
+    const maxConsumo = Math.max(...consumos)
+    const minConsumo = Math.min(...consumos)
+    const lecturaMax = lecturas.find(l => l.consumo === maxConsumo)
+    const lecturaMin = lecturas.find(l => l.consumo === minConsumo)
+
+    const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+
+    setEstadisticas({
+      consumo_promedio: consumoPromedio,
+      consumo_actual: consumoActual,
+      tendencia: tendencia,
+      consumo_mayor: maxConsumo,
+      consumo_menor: minConsumo,
+      mes_mayor_consumo: lecturaMax ? meses[lecturaMax.fecha.getMonth()] : '',
+      mes_menor_consumo: lecturaMin ? meses[lecturaMin.fecha.getMonth()] : ''
+    })
+  }, [])
+
+  const cargarLecturas = useCallback(async () => {
     setLoading(true)
 
     const mesesAtras = parseInt(periodo)
@@ -91,38 +126,12 @@ export default function MiConsumo() {
     }
 
     setLoading(false)
-  }
+  }, [cliente?.id, periodo, calcularEstadisticas])
 
-  const calcularEstadisticas = (lecturas) => {
-    if (lecturas.length === 0) return
-
-    const consumos = lecturas.map(l => l.consumo)
-    const consumoTotal = consumos.reduce((sum, c) => sum + c, 0)
-    const consumoPromedio = consumoTotal / consumos.length
-
-    const consumoActual = lecturas[lecturas.length - 1].consumo
-    const consumoAnterior = lecturas.length > 1 ? lecturas[lecturas.length - 2].consumo : consumoActual
-
-    const tendencia = consumoAnterior > 0
-      ? ((consumoActual - consumoAnterior) / consumoAnterior) * 100
-      : 0
-
-    const consumoMayor = Math.max(...consumos)
-    const consumoMenor = Math.min(...consumos)
-
-    const lecturaMayorConsumo = lecturas.find(l => l.consumo === consumoMayor)
-    const lecturaMenorConsumo = lecturas.find(l => l.consumo === consumoMenor)
-
-    setEstadisticas({
-      consumo_promedio: consumoPromedio,
-      consumo_actual: consumoActual,
-      tendencia: tendencia,
-      consumo_mayor: consumoMayor,
-      consumo_menor: consumoMenor,
-      mes_mayor_consumo: lecturaMayorConsumo?.fecha.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' }) || '',
-      mes_menor_consumo: lecturaMenorConsumo?.fecha.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' }) || ''
-    })
-  }
+  useEffect(() => {
+    if (!cliente?.id) return
+    cargarLecturas()
+  }, [cliente?.id, periodo, cargarLecturas])
 
   const formatearFecha = (fecha) => {
     return fecha.toLocaleDateString('es-ES', {
@@ -158,7 +167,7 @@ export default function MiConsumo() {
   }
 
   // Datos para el gráfico
-  const maxConsumo = Math.max(...lecturas.map(l => l.consumo), 1)
+  const maxConsumo = lecturas.length > 0 ? Math.max(...lecturas.map(l => l.consumo), 1) : 1
 
   return (
     <div className="mi-consumo-container">
