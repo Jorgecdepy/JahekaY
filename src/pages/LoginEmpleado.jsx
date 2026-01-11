@@ -41,10 +41,16 @@ export default function LoginEmpleado() {
 
   // Redirigir si ya está autenticado
   useEffect(() => {
-    if (isAuthenticated && empleado && rol) {
-      const rolNombre = rol.nombre || empleado.rol_nombre
-      const rutaDestino = obtenerRutaPorRol(rolNombre)
-      navigate(rutaDestino)
+    if (isAuthenticated && empleado) {
+      // Puede usar rol.nombre o empleado.rol_nombre
+      const rolNombre = rol?.nombre || empleado.rol_nombre
+      if (rolNombre) {
+        const rutaDestino = obtenerRutaPorRol(rolNombre)
+        navigate(rutaDestino)
+      } else {
+        // Si no tiene rol asignado, ir al dashboard de empleados por defecto
+        navigate('/empleado/dashboard')
+      }
     }
   }, [isAuthenticated, empleado, rol, navigate])
 
