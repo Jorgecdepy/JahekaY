@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Crear Empleado</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    button {
+      background: #3b82f6;
+      color: white;
+      cursor: pointer;
+      border: none;
+      font-weight: bold;
+    }
+    button:hover {
+      background: #2563eb;
+    }
+    .log {
+      background: #1e293b;
+      color: #10b981;
+      padding: 15px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      max-height: 400px;
+      overflow-y: auto;
+      margin-top: 20px;
+    }
+    .error { color: #ef4444; }
+    .success { color: #10b981; }
+    .info { color: #3b82f6; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 Test de Creación de Empleado</h1>
+    <p>Esta página te ayudará a diagnosticar problemas con la creación de empleados.</p>
+
+    <h3>Paso 1: Configurar Supabase</h3>
+    <input type="text" id="supabaseUrl" placeholder="URL de Supabase (ej: https://xxx.supabase.co)">
+    <input type="text" id="supabaseKey" placeholder="Anon Key de Supabase">
+    <button onclick="initSupabase()">Conectar a Supabase</button>
+
+    <h3>Paso 2: Crear Empleado de Prueba</h3>
+    <input type="text" id="nombre" placeholder="Nombre completo" value="Test Empleado">
+    <input type="email" id="email" placeholder="Email" value="test@example.com">
+    <input type="password" id="password" placeholder="Contraseña" value="Test1234">
+    <input type="text" id="rol_id" placeholder="UUID del Rol (opcional)">
+    <button onclick="testCrearEmpleado()">Crear Empleado (Método Directo)</button>
+    <button onclick="testEdgeFunction()">Crear Empleado (Edge Function)</button>
+
+    <h3>Paso 3: Ver Logs</h3>
+    <div class="log" id="logs">
+      <div class="info">Esperando comandos...</div>
+    </div>
+  </div>
+
+  <script>
+    let supabase = null;
+
+    function log(message, type = 'info') {
+      const logs = document.getElementById('logs');
+      const timestamp = new Date().toLocaleTimeString();
+      const color = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+      logs.innerHTML += `<div class="${color}">[${timestamp}] ${message}</div>`;
+      logs.scrollTop = logs.scrollHeight;
+      console.log(message);
+    }
+
+    function initSupabase() {
+      const url = document.getElementById('supabaseUrl').value;
+      const key = document.getElementById('supabaseKey').value;
+
+      if (!url || !key) {
+        log('❌ Por favor ingresa URL y Key de Supabase', 'error');
+        return;
+      }
+
+      try {
+        supabase = window.supabase.createClient(url, key, {
+          auth: {
+            autoRefreshToken: true,
+            persistSession: true,
+            detectSessionInUrl: true
+          }
+        });
+        log('✅ Conectado a Supabase exitosamente', 'success');
+      } catch (error) {
+        log('❌ Error al conectar: ' + error.message, 'error');
+      }
+    }
+
+    async function testCrearEmpleado() {
+      if (!supabase) {
+        log('❌ Primero debes conectar a Supabase', 'error');
+        return;
+      }
+
+      const nombre = document.getElementById('nombre').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const rol_id = document.getElementById('rol_id').value || null;
+
+      log('📝 Iniciando creación de empleado...', 'info');
+      log(`   Nombre: ${nombre}`, 'info');
+      log(`   Email: ${email}`, 'info');
+
+      try {
+        // Paso 1: Crear usuario en Auth
+        log('🔐 Paso 1: Creando usuario en Supabase Auth...', 'info');
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: email,
+          password: password,
+          options: {
+            data: {
+              nombre_completo: nombre,
+              tipo: 'empleado'
+            }
+          }
+        });
+
+        if (authError) {
+          log('❌ Error en Auth: ' + authError.message, 'error');
+          return;
+        }
+
+        if (!authData.user) {
+          log('❌ No se recibió usuario en la respuesta', 'error');
+          return;
+        }
+
+        log('✅ Usuario creado en Auth', 'success');
+        log(`   User ID: ${authData.user.id}`, 'info');
+        log(`   Email confirmado: ${authData.user.email_confirmed_at ? 'Sí' : 'No (requiere confirmación)'}`, 'info');
+
+        // Paso 2: Crear empleado en BD
+        log('💾 Paso 2: Creando registro en tabla empleados...', 'info');
+        const empleadoData = {
+          nombre_completo: nombre,
+          email: email,
+          telefono: null,
+          direccion: null,
+          rol_id: rol_id,
+          fecha_contratacion: null,
+          salario: null,
+          notas: 'Creado desde test',
+          activo: true,
+          usuario_supabase_id: authData.user.id
+        };
+
+        log('   Datos a insertar: ' + JSON.stringify(empleadoData, null, 2), 'info');
+
+        const { data: empleadoInsertado, error: empleadoError } = await supabase
+          .from('empleados')
+          .insert([empleadoData])
+          .select();
+
+        if (empleadoError) {
+          log('❌ Error al crear empleado: ' + empleadoError.message, 'error');
+          log('   Código: ' + empleadoError.code, 'error');
+          log('   Detalles: ' + empleadoError.details, 'error');
+          log('   Hint: ' + empleadoError.hint, 'error');
+          return;
+        }
+
+        log('✅ ¡Empleado creado exitosamente!', 'success');
+        log('   Datos: ' + JSON.stringify(empleadoInsertado, null, 2), 'success');
+
+      } catch (error) {
+        log('❌ Error inesperado: ' + error.message, 'error');
+        console.error(error);
+      }
+    }
+
+    async function testEdgeFunction() {
+      if (!supabase) {
+        log('❌ Primero debes conectar a Supabase', 'error');
+        return;
+      }
+
+      const nombre = document.getElementById('nombre').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const rol_id = document.getElementById('rol_id').value || null;
+
+      log('📝 Probando Edge Function...', 'info');
+
+      try {
+        const { data, error } = await supabase.functions.invoke('crear-empleado', {
+          body: {
+            email: email,
+            password: password,
+            nombre_completo: nombre,
+            telefono: null,
+            direccion: null,
+            rol_id: rol_id,
+            fecha_contratacion: null,
+            salario: null,
+            notas: 'Creado desde test'
+          }
+        });
+
+        if (error) {
+          log('❌ Error en Edge Function: ' + error.message, 'error');
+          if (error.message.includes('not found')) {
+            log('   La Edge Function no está desplegada', 'error');
+          }
+          return;
+        }
+
+        log('✅ Respuesta de Edge Function:', 'success');
+        log('   ' + JSON.stringify(data, null, 2), 'success');
+
+      } catch (error) {
+        log('❌ Error inesperado: ' + error.message, 'error');
+        console.error(error);
+      }
+    }
+  </script>
+</body>
+</html>
