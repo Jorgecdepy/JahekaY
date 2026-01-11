@@ -1,0 +1,145 @@
+/* ============================================
+   EMPTY STATE - ESTILOS
+   ============================================ */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+  border-radius: 16px;
+  border: 2px dashed #e5e7eb;
+}
+
+/* Tamaños */
+.empty-state-small {
+  padding: 1.5rem;
+}
+
+.empty-state-small .empty-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.empty-state-small .empty-title {
+  font-size: 0.9375rem;
+}
+
+.empty-state-small .empty-description {
+  font-size: 0.8125rem;
+}
+
+.empty-state-medium {
+  padding: 2.5rem;
+}
+
+.empty-state-medium .empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.empty-state-medium .empty-title {
+  font-size: 1.125rem;
+}
+
+.empty-state-medium .empty-description {
+  font-size: 0.9375rem;
+}
+
+.empty-state-large {
+  padding: 3rem;
+  min-height: 300px;
+}
+
+.empty-state-large .empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+}
+
+.empty-state-large .empty-title {
+  font-size: 1.5rem;
+}
+
+.empty-state-large .empty-description {
+  font-size: 1rem;
+  max-width: 400px;
+}
+
+/* Icon */
+.empty-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Title */
+.empty-title {
+  margin: 0 0 0.5rem 0;
+  color: #374151;
+  font-weight: 600;
+}
+
+/* Description */
+.empty-description {
+  margin: 0 0 1.5rem 0;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+/* Action Button */
+.empty-action {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.empty-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.empty-action:active {
+  transform: translateY(0);
+}
+
+/* Variante inline (para tablas) */
+.empty-state.inline {
+  background: transparent;
+  border: none;
+  padding: 1.5rem;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .empty-state-large {
+    padding: 2rem;
+    min-height: 200px;
+  }
+
+  .empty-state-large .empty-icon {
+    font-size: 3rem;
+  }
+
+  .empty-state-large .empty-title {
+    font-size: 1.25rem;
+  }
+}

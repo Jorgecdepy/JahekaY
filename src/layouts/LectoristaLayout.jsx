@@ -11,7 +11,7 @@ export default function LectoristaLayout() {
   const handleLogout = async () => {
     if (window.confirm('¿Estás seguro que deseas cerrar sesión?')) {
       await logout()
-      navigate('/lectorista/login')
+      navigate('/login')
     }
   }
 

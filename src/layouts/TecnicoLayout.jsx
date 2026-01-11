@@ -13,7 +13,7 @@ export default function TecnicoLayout() {
   const handleLogout = async () => {
     if (window.confirm('¿Estás seguro que deseas cerrar sesión?')) {
       await logout()
-      navigate('/tecnico/login')
+      navigate('/login')
     }
   }
 

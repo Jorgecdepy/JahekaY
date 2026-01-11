@@ -22,6 +22,7 @@ import ReclamosCliente from './pages/portal/ReclamosCliente'
 import EstadoCuenta from './pages/portal/EstadoCuenta'
 import HistorialPagos from './pages/portal/HistorialPagos'
 import MiConsumo from './pages/portal/MiConsumo'
+import NotFound from './pages/NotFound'
 import { ToastProvider, OfflineIndicator } from './components/common'
 import './App.css'
 
@@ -315,8 +316,8 @@ function App() {
             element={<Navigate to="/login" />}
           />
 
-          {/* Cualquier otra ruta redirige al login */}
-          <Route path="*" element={<Navigate to="/login" />} />
+          {/* Página 404 para rutas no encontradas */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
     </ToastProvider>
