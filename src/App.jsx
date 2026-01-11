@@ -5,15 +5,22 @@ import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import { ClienteAuthProvider, useCliente } from './contexts/ClienteAuthContext'
 import { EmpleadoAuthProvider, useEmpleado } from './contexts/EmpleadoAuthContext'
+import { TecnicoAuthProvider, useTecnico } from './contexts/TecnicoAuthContext'
 import PortalLayout from './layouts/PortalLayout'
 import LectoristaLayout from './layouts/LectoristaLayout'
+import TecnicoLayout from './layouts/TecnicoLayout'
 import LoginCliente from './pages/portal/LoginCliente'
 import LoginEmpleado from './pages/LoginEmpleado'
 import LoginLectorista from './pages/lectorista/LoginLectorista'
+import LoginTecnico from './pages/tecnico/LoginTecnico'
 import DashboardLectorista from './pages/lectorista/DashboardLectorista'
+import DashboardTecnico from './pages/tecnico/DashboardTecnico'
 import CargarLectura from './pages/lectorista/CargarLectura'
 import MisLecturas from './pages/lectorista/MisLecturas'
 import BuscarCliente from './pages/lectorista/BuscarCliente'
+import ReclamosAsignados from './pages/tecnico/ReclamosAsignados'
+import NotificacionesAdmin from './pages/tecnico/NotificacionesAdmin'
+import MapaZonas from './pages/tecnico/MapaZonas'
 import DashboardCliente from './pages/portal/DashboardCliente'
 import ReclamosCliente from './pages/portal/ReclamosCliente'
 import EstadoCuenta from './pages/portal/EstadoCuenta'
@@ -113,6 +120,27 @@ function ProtectedLectoristaRoute({ children }) {
         <button onClick={() => window.history.back()}>Volver</button>
       </div>
     )
+  }
+
+  return children
+}
+
+// Componente protegido para rutas del técnico
+function ProtectedTecnicoRoute({ children }) {
+  const { tecnico, loading } = useTecnico()
+
+  if (loading) {
+    return (
+      <div className="loading">
+        <div className="loading-logo">JahekaY</div>
+        <div className="spinner spinner-lg"></div>
+        <p className="loading-text">Cargando...</p>
+      </div>
+    )
+  }
+
+  if (!tecnico) {
+    return <Navigate to="/tecnico/login" />
   }
 
   return children
@@ -235,6 +263,32 @@ function App() {
             <Route path="cargar" element={<CargarLectura />} />
             <Route path="mis-lecturas" element={<MisLecturas />} />
             <Route path="buscar-cliente" element={<BuscarCliente />} />
+          </Route>
+
+          {/* Rutas del Portal del Técnico */}
+          <Route
+            path="/tecnico/login"
+            element={
+              <TecnicoAuthProvider>
+                <LoginTecnico />
+              </TecnicoAuthProvider>
+            }
+          />
+          <Route
+            path="/tecnico"
+            element={
+              <TecnicoAuthProvider>
+                <ProtectedTecnicoRoute>
+                  <TecnicoLayout />
+                </ProtectedTecnicoRoute>
+              </TecnicoAuthProvider>
+            }
+          >
+            <Route index element={<Navigate to="/tecnico/dashboard" />} />
+            <Route path="dashboard" element={<DashboardTecnico />} />
+            <Route path="reclamos" element={<ReclamosAsignados />} />
+            <Route path="notificaciones" element={<NotificacionesAdmin />} />
+            <Route path="mapa" element={<MapaZonas />} />
           </Route>
 
           {/* Ruta por defecto */}
