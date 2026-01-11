@@ -35,6 +35,7 @@ function Configuracion() {
   const [formDataEmpleado, setFormDataEmpleado] = useState({
     nombre_completo: '',
     email: '',
+    password: '',
     telefono: '',
     direccion: '',
     rol_id: '',
@@ -42,6 +43,8 @@ function Configuracion() {
     salario: '',
     notas: ''
   })
+  const [credencialesGeneradas, setCredencialesGeneradas] = useState(null)
+  const [isModalCredencialesOpen, setIsModalCredencialesOpen] = useState(false)
 
   // Estados para gestión de accesos al portal
   const [isModalAccesoOpen, setIsModalAccesoOpen] = useState(false)
@@ -339,11 +342,27 @@ function Configuracion() {
     }
   }
 
+  const generarPassword = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'
+    let password = ''
+    for (let i = 0; i < 8; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
+    setFormDataEmpleado({ ...formDataEmpleado, password })
+  }
+
   const abrirModalNuevoEmpleado = () => {
     setEmpleadoEditar(null)
+    // Generar contraseña automáticamente
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'
+    let password = ''
+    for (let i = 0; i < 8; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
     setFormDataEmpleado({
       nombre_completo: '',
       email: '',
+      password: password,
       telefono: '',
       direccion: '',
       rol_id: roles[0]?.id || '',
@@ -359,6 +378,7 @@ function Configuracion() {
     setFormDataEmpleado({
       nombre_completo: empleado.nombre_completo,
       email: empleado.email,
+      password: '', // No mostrar contraseña en edición
       telefono: empleado.telefono || '',
       direccion: empleado.direccion || '',
       rol_id: empleado.rol_id || '',
@@ -391,41 +411,89 @@ function Configuracion() {
     setSavingEmpleado(true)
 
     try {
-      const empleadoData = {
-        nombre_completo: formDataEmpleado.nombre_completo,
-        email: formDataEmpleado.email,
-        telefono: formDataEmpleado.telefono,
-        direccion: formDataEmpleado.direccion,
-        rol_id: formDataEmpleado.rol_id,
-        fecha_contratacion: formDataEmpleado.fecha_contratacion,
-        salario: formDataEmpleado.salario ? parseFloat(formDataEmpleado.salario) : null,
-        notas: formDataEmpleado.notas,
-        activo: true
-      }
-
-      let error
       if (empleadoEditar) {
-        // Actualizar empleado existente
-        const result = await supabase
+        // Actualizar empleado existente (sin cambiar credenciales)
+        const empleadoData = {
+          nombre_completo: formDataEmpleado.nombre_completo,
+          email: formDataEmpleado.email,
+          telefono: formDataEmpleado.telefono,
+          direccion: formDataEmpleado.direccion,
+          rol_id: formDataEmpleado.rol_id,
+          fecha_contratacion: formDataEmpleado.fecha_contratacion,
+          salario: formDataEmpleado.salario ? parseFloat(formDataEmpleado.salario) : null,
+          notas: formDataEmpleado.notas
+        }
+
+        const { error } = await supabase
           .from('empleados')
           .update(empleadoData)
           .eq('id', empleadoEditar.id)
-        error = result.error
+
+        if (error) throw error
+
+        setIsModalEmpleadoOpen(false)
+        mostrarMensaje('Empleado actualizado exitosamente', 'success')
       } else {
-        // Crear nuevo empleado
-        const result = await supabase
+        // Crear nuevo empleado con credenciales de acceso
+
+        // 1. Crear usuario en Supabase Auth
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: formDataEmpleado.email,
+          password: formDataEmpleado.password,
+          options: {
+            data: {
+              nombre_completo: formDataEmpleado.nombre_completo,
+              tipo: 'empleado'
+            }
+          }
+        })
+
+        if (authError) {
+          if (authError.message.includes('already registered')) {
+            throw new Error('Este email ya está registrado en el sistema')
+          }
+          throw authError
+        }
+
+        if (!authData.user) {
+          throw new Error('No se pudo crear el usuario de autenticación')
+        }
+
+        // 2. Crear el registro del empleado con el ID de auth
+        const empleadoData = {
+          nombre_completo: formDataEmpleado.nombre_completo,
+          email: formDataEmpleado.email,
+          telefono: formDataEmpleado.telefono,
+          direccion: formDataEmpleado.direccion,
+          rol_id: formDataEmpleado.rol_id,
+          fecha_contratacion: formDataEmpleado.fecha_contratacion,
+          salario: formDataEmpleado.salario ? parseFloat(formDataEmpleado.salario) : null,
+          notas: formDataEmpleado.notas,
+          activo: true,
+          usuario_supabase_id: authData.user.id
+        }
+
+        const { error: empleadoError } = await supabase
           .from('empleados')
           .insert([empleadoData])
-        error = result.error
+
+        if (empleadoError) {
+          // Si falla la creación del empleado, intentar eliminar el usuario auth creado
+          console.error('Error al crear empleado, el usuario auth fue creado pero el empleado no:', empleadoError)
+          throw empleadoError
+        }
+
+        // 3. Mostrar credenciales generadas
+        setCredencialesGeneradas({
+          nombre: formDataEmpleado.nombre_completo,
+          email: formDataEmpleado.email,
+          password: formDataEmpleado.password
+        })
+        setIsModalEmpleadoOpen(false)
+        setIsModalCredencialesOpen(true)
+        mostrarMensaje('Empleado creado exitosamente', 'success')
       }
 
-      if (error) throw error
-
-      setIsModalEmpleadoOpen(false)
-      mostrarMensaje(
-        empleadoEditar ? 'Empleado actualizado exitosamente' : 'Empleado creado exitosamente',
-        'success'
-      )
       cargarEmpleados()
     } catch (error) {
       console.error('Error:', error)
@@ -1253,6 +1321,7 @@ function Configuracion() {
                 onChange={(e) => setFormDataEmpleado({...formDataEmpleado, email: e.target.value})}
                 placeholder="juan@ejemplo.com"
                 required
+                disabled={empleadoEditar}
               />
             </div>
             <div className="form-group">
@@ -1265,6 +1334,34 @@ function Configuracion() {
               />
             </div>
           </div>
+
+          {!empleadoEditar && (
+            <div className="form-group">
+              <label>Contraseña de Acceso *</label>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <input
+                  type="text"
+                  value={formDataEmpleado.password}
+                  onChange={(e) => setFormDataEmpleado({...formDataEmpleado, password: e.target.value})}
+                  placeholder="Contraseña"
+                  required
+                  minLength="6"
+                  style={{ flex: 1 }}
+                />
+                <button
+                  type="button"
+                  onClick={generarPassword}
+                  className="btn-secondary"
+                  style={{ whiteSpace: 'nowrap' }}
+                >
+                  Generar
+                </button>
+              </div>
+              <small className="form-hint">
+                Esta contraseña permitirá al empleado acceder al sistema
+              </small>
+            </div>
+          )}
 
           <div className="form-group">
             <label>Dirección</label>
@@ -1735,6 +1832,117 @@ function Configuracion() {
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* Modal para mostrar credenciales generadas del empleado */}
+      <Modal
+        isOpen={isModalCredencialesOpen}
+        onClose={() => setIsModalCredencialesOpen(false)}
+        title="Credenciales de Acceso Generadas"
+      >
+        <div className="credenciales-container">
+          <div className="alert alert-success" style={{ marginBottom: '1.5rem' }}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            <div>
+              <strong>Empleado creado exitosamente</strong>
+              <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.875rem' }}>
+                Guarde estas credenciales y compártalas con el empleado
+              </p>
+            </div>
+          </div>
+
+          {credencialesGeneradas && (
+            <div className="credenciales-card" style={{
+              background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+              border: '2px solid #e2e8f0',
+              borderRadius: '12px',
+              padding: '1.5rem',
+              marginBottom: '1.5rem'
+            }}>
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ fontSize: '0.75rem', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Empleado
+                </label>
+                <p style={{ margin: '0.25rem 0 0 0', fontSize: '1.125rem', fontWeight: '600', color: '#1e293b' }}>
+                  {credencialesGeneradas.nombre}
+                </p>
+              </div>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ fontSize: '0.75rem', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Email (Usuario)
+                </label>
+                <p style={{
+                  margin: '0.25rem 0 0 0',
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  color: '#2563eb',
+                  fontFamily: 'monospace',
+                  background: '#eff6ff',
+                  padding: '0.5rem 0.75rem',
+                  borderRadius: '6px',
+                  wordBreak: 'break-all'
+                }}>
+                  {credencialesGeneradas.email}
+                </p>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '0.75rem', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Contraseña
+                </label>
+                <p style={{
+                  margin: '0.25rem 0 0 0',
+                  fontSize: '1.25rem',
+                  fontWeight: '700',
+                  color: '#16a34a',
+                  fontFamily: 'monospace',
+                  background: '#f0fdf4',
+                  padding: '0.5rem 0.75rem',
+                  borderRadius: '6px',
+                  letterSpacing: '0.1em'
+                }}>
+                  {credencialesGeneradas.password}
+                </p>
+              </div>
+            </div>
+          )}
+
+          <div className="alert alert-warning" style={{ marginBottom: '1rem' }}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            <div>
+              <strong>Importante</strong>
+              <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.875rem' }}>
+                Esta es la única vez que verá la contraseña. Asegúrese de guardarla o compartirla con el empleado.
+              </p>
+            </div>
+          </div>
+
+          <p style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '1.5rem' }}>
+            El empleado podrá iniciar sesión en <strong>/empleado/login</strong> usando estas credenciales.
+          </p>
+
+          <div className="form-actions">
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => {
+                setIsModalCredencialesOpen(false)
+                setCredencialesGeneradas(null)
+              }}
+              style={{ width: '100%' }}
+            >
+              Entendido
+            </button>
+          </div>
+        </div>
       </Modal>
     </div>
   )
